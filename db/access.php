@@ -18,18 +18,21 @@
  * Plugin capabilities for the block_my_certificates plugin.
  *
  * @package   block_my_certificates
- * @copyright 2025, Agiledrop <your@email.address>
+ * @copyright Agiledrop, 2026  <developer@agiledrop.com>
+ * @author    Matej Pal <matej.pal@agiledrop.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
         'block/my_certificates:myaddinstance' => [
                 'captype' => 'write',
                 'contextlevel' => CONTEXT_SYSTEM,
                 'archetypes' => [
-                        'user' => CAP_ALLOW
+                        'user' => CAP_ALLOW,
                 ],
-                'clonepermissionsfrom' => 'moodle/my:manageblocks'
+                'clonepermissionsfrom' => 'moodle/my:manageblocks',
         ],
         'block/my_certificates:addinstance' => [
                 'riskbitmask' => RISK_SPAM | RISK_XSS,
@@ -37,8 +40,8 @@ $capabilities = [
                 'contextlevel' => CONTEXT_BLOCK,
                 'archetypes' => [
                         'editingteacher' => CAP_ALLOW,
-                        'manager' => CAP_ALLOW
+                        'manager' => CAP_ALLOW,
                 ],
-                'clonepermissionsfrom' => 'moodle/site:manageblocks'
+                'clonepermissionsfrom' => 'moodle/site:manageblocks',
         ],
 ];

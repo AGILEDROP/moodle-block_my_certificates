@@ -18,16 +18,17 @@
  * Languages configuration for the block_my_certificates plugin.
  *
  * @package   block_my_certificates
- * @copyright 2025, Agiledrop <your@email.address>
+ * @copyright Agiledrop, 2026  <developer@agiledrop.com>
+ * @author    Matej Pal <matej.pal@agiledrop.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'My Certificates';
+$string['date'] = 'Date: ';
+$string['download'] = 'Download certificate';
+$string['learning_path'] = 'Learning path: ';
 $string['my_certificates:addinstance'] = 'Add a new My Certificates block';
 $string['my_certificates:myaddinstance'] = 'Add a new My Certificates block to the My Moodle page';
-$string['download'] = 'Download certificate';
-$string['strdaymonthyear'] = '%d.%m.%Y';
-$string['learning_path'] = 'Learning path: ';
-$string['date'] = 'Date: ';
-$string['unlockmore'] = 'Unlock more certificates:';
 $string['no_certificates'] = 'No certificates text';
+$string['pluginname'] = 'My Certificates';
+$string['strdaymonthyear'] = '%d.%m.%Y';
+$string['unlockmore'] = 'Unlock more certificates:';

@@ -18,10 +18,14 @@
  * Block definition class for the block_my_certificates plugin.
  *
  * @package   block_my_certificates
- * @copyright 2025, Agiledrop <your@email.address>
+ * @copyright Agiledrop, 2026  <developer@agiledrop.com>
+ * @author    Matej Pal <matej.pal@agiledrop.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/**
+ *
+ */
 class block_my_certificates extends block_base {
     /**
      * Initialises the block.
@@ -38,7 +42,7 @@ class block_my_certificates extends block_base {
      * @return stdClass|null The block HTML.
      */
     public function get_content() {
-        global $PAGE, $OUTPUT, $USER;
+        global $OUTPUT, $USER;
 
         if ($this->content !== null) {
             return $this->content;
@@ -56,10 +60,10 @@ class block_my_certificates extends block_base {
             }
         }
 
-        $PAGE->requires->js(new moodle_url('/blocks/my_certificates/js/pdf.min.js'), true);
+        $this->page->requires->js(new moodle_url('/blocks/my_certificates/js/pdf.min.js'), true);
 
-        $PAGE->requires->js_call_amd('block_my_certificates/pdf_preview', 'init', [
-            'workersrc' => (new moodle_url('/blocks/my_certificates/js/pdf.worker.min.js'))->out(false)
+        $this->page->requires->js_call_amd('block_my_certificates/pdf_preview', 'init', [
+            'workersrc' => (new moodle_url('/blocks/my_certificates/js/pdf.worker.min.js'))->out(false),
         ]);
 
         $this->content = new stdClass();
@@ -131,7 +135,7 @@ class block_my_certificates extends block_base {
 
         $out = [];
         foreach ($records as $r) {
-            $previewurl =  new moodle_url('/mod/customcert/view.php', ['id' => $r->cmid, 'downloadown' => 1]);
+            $previewurl = new moodle_url('/mod/customcert/view.php', ['id' => $r->cmid, 'downloadown' => 1]);
 
             $out[] = [
                     'certificate' => $r->certname,
