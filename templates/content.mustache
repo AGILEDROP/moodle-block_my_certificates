@@ -90,4 +90,23 @@
             {{{nocertificatestext}}}
         </div>
     {{/usercertificates}}
+    {{#hasallcertificates}}
+        <div class="all-certificates-card">
+            <div class="all-certificates-header">
+                <h3 class="all-certificates-title">
+                    {{#str}} unlockmore, block_my_certificates {{/str}}
+                </h3>
+            </div>
+            <ul class="all-certificates-list">
+                {{#allcertificates}}
+                    <li class="all-certificates-item">
+                        <a href="{{viewurl}}" class="all-certificates-link">
+                            <span class="all-certificates-name">{{name}}</span>
+                            <span class="all-certificates-chevron" aria-hidden="true">→</span>
+                        </a>
+                    </li>
+                {{/allcertificates}}
+            </ul>
+        </div>
+    {{/hasallcertificates}}
 </div>

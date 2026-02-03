@@ -24,7 +24,9 @@
  */
 
 /**
+ * My Certificates block.
  *
+ * @package    block_my_certificates
  */
 class block_my_certificates extends block_base {
     /**
@@ -77,9 +79,12 @@ class block_my_certificates extends block_base {
             ['context' => $this->context],
         );
 
+        $showallcertificates = !empty($this->config->showallcertificates);
+
         $data = [
             'usercertificates' => $usercertificates,
             'allcertificates' => $diffuservsallcerts,
+            'hasallcertificates' => $showallcertificates && !empty($diffuservsallcerts),
             'nocertificatestext' => $safehtml,
         ];
 

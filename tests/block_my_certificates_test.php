@@ -1,0 +1,164 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * PHPUnit tests for block_my_certificates.
+ *
+ * @package    block_my_certificates
+ * @copyright  2026, Agiledrop
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+namespace block_my_certificates;
+
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once($CFG->dirroot . '/lib/blocklib.php');
+require_once($CFG->dirroot . '/blocks/moodleblock.class.php');
+require_once($CFG->dirroot . '/blocks/my_certificates/block_my_certificates.php');
+
+/**
+ * Tests for the My Certificates block.
+ *
+ * @covers \block_my_certificates
+ */
+final class block_my_certificates_test extends \advanced_testcase {
+    /**
+     * Ensure issued certificates are returned with expected fields and order.
+     *
+     * @covers \block_my_certificates::get_issued_for_user
+     */
+    public function test_get_issued_for_user_returns_ordered_data(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+
+        $generator = $this->getDataGenerator();
+        $user = $generator->create_user();
+        $course = $generator->create_course();
+
+        $cert1 = $generator->create_module('customcert', [
+            'course' => $course->id,
+            'name' => 'Certificate 1',
+        ]);
+        $cert2 = $generator->create_module('customcert', [
+            'course' => $course->id,
+            'name' => 'Certificate 2',
+        ]);
+
+        $now = time();
+        $DB->insert_record('customcert_issues', (object) [
+            'customcertid' => $cert1->id,
+            'userid' => $user->id,
+            'code' => 'CODE1',
+            'timecreated' => $now - 3600,
+        ]);
+        $DB->insert_record('customcert_issues', (object) [
+            'customcertid' => $cert2->id,
+            'userid' => $user->id,
+            'code' => 'CODE2',
+            'timecreated' => $now,
+        ]);
+
+        $block = new \block_my_certificates();
+        $method = new \ReflectionMethod($block, 'get_issued_for_user');
+        $method->setAccessible(true);
+        $issued = $method->invoke($block, $user->id);
+
+        $this->assertCount(2, $issued);
+        $this->assertSame('Certificate 2', $issued[0]['certificate']);
+        $this->assertSame('Certificate 1', $issued[1]['certificate']);
+        $this->assertArrayHasKey('course', $issued[0]);
+        $this->assertArrayHasKey('date', $issued[0]);
+        $this->assertArrayHasKey('previewurl', $issued[0]);
+        $this->assertArrayHasKey('customcertid', $issued[0]);
+        $this->assertArrayHasKey('courseid', $issued[0]);
+        $this->assertArrayHasKey('timecreated', $issued[0]);
+    }
+
+    /**
+     * Ensure all certificates include course and view URLs when module exists.
+     *
+     * @covers \block_my_certificates::get_all_certificates
+     */
+    public function test_get_all_certificates_returns_view_urls(): void {
+        $this->resetAfterTest(true);
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+
+        $generator->create_module('customcert', [
+            'course' => $course->id,
+            'name' => 'Certificate A',
+        ]);
+        $generator->create_module('customcert', [
+            'course' => $course->id,
+            'name' => 'Certificate B',
+        ]);
+
+        $block = new \block_my_certificates();
+        $method = new \ReflectionMethod($block, 'get_all_certificates');
+        $method->setAccessible(true);
+        $certs = $method->invoke($block);
+
+        $this->assertCount(2, $certs);
+        foreach ($certs as $cert) {
+            $this->assertArrayHasKey('courseurl', $cert);
+            $this->assertArrayHasKey('viewurl', $cert);
+            $this->assertNotEmpty($cert['courseurl']);
+            $this->assertNotEmpty($cert['viewurl']);
+        }
+    }
+
+    /**
+     * Ensure all certificates section is controlled by config.
+     *
+     * @covers \block_my_certificates::get_content
+     */
+    public function test_all_certificates_section_respects_config(): void {
+        $this->resetAfterTest(true);
+
+        $generator = $this->getDataGenerator();
+        $user = $generator->create_user();
+        $course = $generator->create_course();
+        $generator->create_module('customcert', [
+            'course' => $course->id,
+            'name' => 'Certificate A',
+        ]);
+
+        $this->setUser($user);
+
+        $page = new \moodle_page();
+        $page->set_url(new \moodle_url('/'));
+        $page->set_context(\context_system::instance());
+        $page->set_pagelayout('standard');
+
+        $block = new \block_my_certificates();
+        $block->page = $page;
+        $block->config = (object) ['showallcertificates' => 0];
+        $content = $block->get_content();
+        $this->assertNotEmpty($content);
+        $this->assertStringNotContainsString('all-certificates-card', $content->text);
+
+        $block = new \block_my_certificates();
+        $block->page = $page;
+        $block->config = (object) ['showallcertificates' => 1];
+        $content = $block->get_content();
+        $this->assertNotEmpty($content);
+        $this->assertStringContainsString('all-certificates-card', $content->text);
+    }
+}

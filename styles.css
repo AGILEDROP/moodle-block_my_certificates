@@ -7,7 +7,7 @@
  */
 
 /* Main grid container */
-.block-my-certificates-grid {
+.block_my_certificates .block-my-certificates-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1.5rem;
@@ -17,18 +17,18 @@
 
 /* Responsive grid adjustments */
 @media (min-width: 768px) {
-    .block-my-certificates-grid {
+    .block_my_certificates .block-my-certificates-grid {
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     }
 }
 
 /* Certificate card wrapper */
-.certificate-card-wrapper {
+.block_my_certificates .certificate-card-wrapper {
     display: flex;
 }
 
 /* Certificate card */
-.certificate-card {
+.block_my_certificates .certificate-card {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -39,13 +39,13 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.certificate-card:hover {
+.block_my_certificates .certificate-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* Certificate preview section */
-.certificate-preview {
+.block_my_certificates .certificate-preview {
     position: relative;
     width: 100%;
     background-color: #f8f9fa;
@@ -56,7 +56,7 @@
     min-height: 200px;
 }
 
-.certificate-preview canvas.pdf-canvas {
+.block_my_certificates .certificate-preview canvas.pdf-canvas {
     max-width: 100%;
     height: auto;
     display: block;
@@ -65,21 +65,21 @@
 }
 
 /* Certificate body */
-.certificate-body {
+.block_my_certificates .certificate-body {
     padding: 1.25rem;
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-.certificate-content {
+.block_my_certificates .certificate-content {
     display: flex;
     flex-direction: column;
     height: 100%;
 }
 
 /* Certificate title */
-.certificate-title {
+.block_my_certificates .certificate-title {
     color: #ffffff;
     font-size: 1.125rem;
     font-weight: 700;
@@ -88,42 +88,42 @@
 }
 
 /* Certificate details section */
-.certificate-details {
+.block_my_certificates .certificate-details {
     margin-bottom: 1rem;
     flex: 1;
 }
 
-.certificate-info-item {
+.block_my_certificates .certificate-info-item {
     display: flex;
     flex-direction: column;
     margin-bottom: 0.75rem;
 }
 
-.certificate-info-item:last-child {
+.block_my_certificates .certificate-info-item:last-child {
     margin-bottom: 0;
 }
 
-.certificate-label {
+.block_my_certificates .certificate-label {
     color: rgba(255, 255, 255, 0.8);
     font-size: 0.875rem;
     font-weight: 500;
     margin-bottom: 0.25rem;
 }
 
-.certificate-value {
+.block_my_certificates .certificate-value {
     color: #ffffff;
     font-size: 1rem;
     font-weight: 600;
 }
 
 /* Certificate actions section */
-.certificate-actions {
+.block_my_certificates .certificate-actions {
     border-top: 1px solid rgba(255, 255, 255, 0.2);
     padding-top: 1rem;
     margin-top: auto;
 }
 
-.certificate-download-link {
+.block_my_certificates .certificate-download-link {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -133,30 +133,30 @@
     transition: opacity 0.2s ease;
 }
 
-.certificate-download-link:hover {
+.block_my_certificates .certificate-download-link:hover {
     color: #ffffff;
     text-decoration: none;
     opacity: 0.8;
 }
 
-.certificate-download-link:focus {
+.block_my_certificates .certificate-download-link:focus {
     outline: 2px solid rgba(255, 255, 255, 0.5);
     outline-offset: 2px;
     border-radius: 0.25rem;
 }
 
-.certificate-download-link img {
+.block_my_certificates .certificate-download-link img {
     width: 16px;
     height: 16px;
     filter: brightness(0) invert(1);
 }
 
-.certificate-link-label {
+.block_my_certificates .certificate-link-label {
     font-size: 0.9375rem;
 }
 
 /* No certificates message */
-.no-certificates-message {
+.block_my_certificates .no-certificates-message {
     grid-column: 1 / -1;
     padding: 2rem;
     text-align: center;
@@ -165,46 +165,144 @@
     border: 2px dashed #dee2e6;
 }
 
-.no-certificates-message p {
+.block_my_certificates .no-certificates-message p {
     margin: 0;
     color: #6c757d;
     font-size: 1rem;
 }
 
+/* All certificates section */
+.block_my_certificates .all-certificates-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: #ffffff;
+    border: 1px solid #e6e8ef;
+    border-radius: 0.75rem;
+    box-shadow: 0 6px 20px rgba(20, 32, 70, 0.08);
+}
+
+.block_my_certificates .all-certificates-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.block_my_certificates .all-certificates-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.block_my_certificates .all-certificates-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.block_my_certificates .all-certificates-item {
+    margin: 0;
+}
+
+.block_my_certificates .all-certificates-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    background: #f8fafc;
+    color: #1f2937;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.block_my_certificates .all-certificates-link:hover {
+    background: #eef2ff;
+    border-color: #c7d2fe;
+    transform: translateY(-1px);
+}
+
+.block_my_certificates .all-certificates-link:focus {
+    outline: 2px solid #94a3b8;
+    outline-offset: 2px;
+}
+
+.block_my_certificates .all-certificates-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: inherit;
+}
+
+.block_my_certificates .all-certificates-chevron {
+    color: #6366f1;
+    font-size: 1.1rem;
+}
+
 /* Dark mode support */
-body.theme-dark .certificate-preview {
+body.theme-dark .block_my_certificates .certificate-preview {
     background-color: #2d3748;
 }
 
-body.theme-dark .no-certificates-message {
+body.theme-dark .block_my_certificates .no-certificates-message {
     background-color: #2d3748;
     border-color: #4a5568;
 }
 
-body.theme-dark .no-certificates-message p {
+body.theme-dark .block_my_certificates .no-certificates-message p {
     color: #cbd5e0;
+}
+
+body.theme-dark .block_my_certificates .all-certificates-card {
+    background: #1f2937;
+    border-color: #374151;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+}
+
+body.theme-dark .block_my_certificates .all-certificates-title {
+    color: #f3f4f6;
+}
+
+body.theme-dark .block_my_certificates .all-certificates-link {
+    background: #111827;
+    color: #e5e7eb;
+}
+
+body.theme-dark .block_my_certificates .all-certificates-link:hover {
+    background: #1f2937;
+    border-color: #4b5563;
+}
+
+body.theme-dark .block_my_certificates .all-certificates-chevron {
+    color: #a5b4fc;
 }
 
 /* Print styles */
 @media print {
-    .certificate-card {
+    .block_my_certificates .certificate-card {
         break-inside: avoid;
         page-break-inside: avoid;
     }
 
-    .certificate-actions {
+    .block_my_certificates .certificate-actions {
         display: none;
     }
 }
 
 /* Accessibility improvements */
-.certificate-card:focus-within {
+.block_my_certificates .certificate-card:focus-within {
     outline: 3px solid #4299e1;
     outline-offset: 2px;
 }
 
 /* Loading state for canvas */
-canvas.pdf-canvas {
+.block_my_certificates canvas.pdf-canvas {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;
     animation: loading 1.5s ease-in-out infinite;
@@ -220,18 +318,18 @@ canvas.pdf-canvas {
 }
 
 /* Alternative color schemes (can be customized) */
-.certificate-card.scheme-blue {
+.block_my_certificates .certificate-card.scheme-blue {
     background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
 }
 
-.certificate-card.scheme-green {
+.block_my_certificates .certificate-card.scheme-green {
     background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
 }
 
-.certificate-card.scheme-orange {
+.block_my_certificates .certificate-card.scheme-orange {
     background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
 }
 
-.certificate-card.scheme-red {
+.block_my_certificates .certificate-card.scheme-red {
     background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
 }

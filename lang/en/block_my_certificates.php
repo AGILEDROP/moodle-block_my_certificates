@@ -33,5 +33,6 @@ $string['my_certificates:myaddinstance'] = 'Add a new My Certificates block to t
 $string['no_certificates'] = 'No certificates text';
 $string['pluginname'] = 'My Certificates';
 $string['privacy:metadata'] = 'The My Certificates block only displays existing certificate data and does not store any personal data.';
+$string['showallcertificates'] = 'Show all certificates section';
 $string['strdaymonthyear'] = '%d.%m.%Y';
 $string['unlockmore'] = 'Unlock more certificates:';

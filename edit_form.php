@@ -58,5 +58,16 @@ class block_my_certificates_edit_form extends block_edit_form {
 
         $mform->setType('config_text', PARAM_RAW);
         $mform->addRule('config_text', null, 'required', null, 'client');
+
+        $mform->addElement(
+            'select',
+            'config_showallcertificates',
+            get_string('showallcertificates', 'block_my_certificates'),
+            [
+                1 => get_string('yes'),
+                0 => get_string('no'),
+            ]
+        );
+        $mform->setDefault('config_showallcertificates', 1);
     }
 }
