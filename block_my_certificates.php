@@ -72,9 +72,9 @@ class block_my_certificates extends block_base {
         $nocertificatestext = $this->config->text ?? ['text' => '', 'format' => FORMAT_HTML];
 
         $safehtml = format_text(
-                $nocertificatestext['text'],
-                $nocertificatestext['format'],
-                ['context' => $this->context],
+            $nocertificatestext['text'],
+            $nocertificatestext['format'],
+            ['context' => $this->context],
         );
 
         $data = [

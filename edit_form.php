@@ -18,7 +18,8 @@
  * block_my_certificates edit_form.php description here.
  *
  * @package    block_my_certificates
- * @copyright  2025, Agiledrop  <>
+ * @copyright  Agiledrop, 2026  <developer@agiledrop.com>
+ * @author     Matej Pal <matej.pal@agiledrop.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -32,7 +33,6 @@
  * to edit and configure the settings for the block.
  */
 class block_my_certificates_edit_form extends block_edit_form {
-
     /**
      * Form definition.
      *
@@ -49,14 +49,14 @@ class block_my_certificates_edit_form extends block_edit_form {
         ];
 
         $mform->addElement(
-                'editor',
-                'config_text',
-                get_string('no_certificates', 'block_my_certificates'),
-                null,
-                $editoroptions
+            'editor',
+            'config_text',
+            get_string('no_certificates', 'block_my_certificates'),
+            null,
+            $editoroptions
         );
 
         $mform->setType('config_text', PARAM_RAW);
-        $mform->addRule('config_text',  null, 'required', null, 'client');
+        $mform->addRule('config_text', null, 'required', null, 'client');
     }
 }

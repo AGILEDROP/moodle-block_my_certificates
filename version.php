@@ -18,7 +18,8 @@
  * Version metadata for the block_my_certificates plugin.
  *
  * @package   block_my_certificates
- * @copyright 2025, Agiledrop <your@email.address>
+ * @copyright Agiledrop, 2026  <developer@agiledrop.com>
+ * @author    Matej Pal <matej.pal@agiledrop.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
