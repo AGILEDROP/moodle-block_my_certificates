@@ -60,10 +60,10 @@ class block_my_certificates extends block_base {
             }
         }
 
-        $this->page->requires->js(new moodle_url('/blocks/my_certificates/js/pdf.min.js'), true);
+        $this->page->requires->js(new moodle_url('/blocks/my_certificates/thirdparty/pdfjs/pdf.min.js'), true);
 
         $this->page->requires->js_call_amd('block_my_certificates/pdf_preview', 'init', [
-            'workersrc' => (new moodle_url('/blocks/my_certificates/js/pdf.worker.min.js'))->out(false),
+            'workersrc' => (new moodle_url('/blocks/my_certificates/thirdparty/pdfjs/pdf.worker.min.js'))->out(false),
         ]);
 
         $this->content = new stdClass();

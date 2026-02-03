@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace block_my_certificates;
+namespace block_my_certificates\privacy;
 
 use core_privacy\local\metadata\null_provider;
 
