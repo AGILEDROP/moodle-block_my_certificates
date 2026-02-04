@@ -18,7 +18,8 @@
  * PHPUnit tests for block_my_certificates.
  *
  * @package    block_my_certificates
- * @copyright  2026, Agiledrop
+ * @copyright  Agiledrop, 2026 <developer@agiledrop.com>
+ * @author     Matej Pal <matej.pal@agiledrop.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

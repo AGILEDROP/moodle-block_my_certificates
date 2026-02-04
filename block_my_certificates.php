@@ -18,7 +18,7 @@
  * Block definition class for the block_my_certificates plugin.
  *
  * @package   block_my_certificates
- * @copyright Agiledrop, 2026  <developer@agiledrop.com>
+ * @copyright Agiledrop, 2026 <developer@agiledrop.com>
  * @author    Matej Pal <matej.pal@agiledrop.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -39,6 +39,24 @@ class block_my_certificates extends block_base {
     }
 
     /**
+     * Indicates that this block has global configuration settings.
+     *
+     * @return bool False - no global config, only instance config
+     */
+    public function has_config() {
+        return false;
+    }
+
+    /**
+     * Indicates that this block has instance configuration.
+     *
+     * @return bool True - allows per-instance configuration
+     */
+    public function instance_allow_config() {
+        return true;
+    }
+
+    /**
      * Gets the block contents.
      *
      * @return stdClass|null The block HTML.
@@ -47,6 +65,17 @@ class block_my_certificates extends block_base {
         global $OUTPUT, $USER;
 
         if ($this->content !== null) {
+            return $this->content;
+        }
+
+        // Check if customcert module is available.
+        if (!$this->is_customcert_available()) {
+            $this->content = new stdClass();
+            $this->content->text = html_writer::div(
+                get_string('customcert_not_available', 'block_my_certificates'),
+                'alert alert-warning'
+            );
+            $this->content->footer = '';
             return $this->content;
         }
 
@@ -148,7 +177,7 @@ class block_my_certificates extends block_base {
                     'courseid' => $r->courseid,
                     'customcertid' => $r->customcertid,
                     'timecreated' => $r->timecreated,
-                    'date' => userdate($r->timecreated, get_string('strdaymonthyear', 'block_my_certificates')),
+                    'date' => userdate($r->timecreated, get_string('strftimedateshort')),
                     'previewurl' => $previewurl->out(false),
             ];
         }
@@ -172,6 +201,8 @@ class block_my_certificates extends block_base {
         foreach ($certificates as $certificate) {
             $courseurl = (new moodle_url('/course/view.php', ['id' => $certificate->course]))->out(false);
 
+            $viewurl = '';
+
             if ($cm = get_coursemodule_from_instance('customcert', $certificate->id, $certificate->course, false, IGNORE_MISSING)) {
                 $viewurl = (new moodle_url('/mod/customcert/view.php', ['id' => $cm->id]))->out(false);
             }
@@ -180,10 +211,27 @@ class block_my_certificates extends block_base {
                     'id' => $certificate->id,
                     'name' => $certificate->name,
                     'courseurl' => $courseurl,
-                    'viewurl' => $viewurl ?? '',
+                    'viewurl' => $viewurl,
             ];
         }
 
         return $certificatesdata;
+    }
+
+    /**
+     * Check if the customcert module is installed and available.
+     *
+     * @return bool True if customcert module is available, false otherwise.
+     */
+    protected function is_customcert_available(): bool {
+        global $DB;
+
+        static $available = null;
+
+        if ($available === null) {
+            $available = $DB->record_exists('modules', ['name' => 'customcert', 'visible' => 1]);
+        }
+
+        return $available;
     }
 }

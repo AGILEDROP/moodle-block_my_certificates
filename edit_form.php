@@ -18,7 +18,7 @@
  * block_my_certificates edit_form.php description here.
  *
  * @package    block_my_certificates
- * @copyright  Agiledrop, 2026  <developer@agiledrop.com>
+ * @copyright  Agiledrop, 2026 <developer@agiledrop.com>
  * @author     Matej Pal <matej.pal@agiledrop.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -42,9 +42,9 @@ class block_my_certificates_edit_form extends block_edit_form {
     protected function specific_definition($mform) {
         // Text field.
         $editoroptions = [
-                'subdirs'               => 0,
-                'maxbytes'              => 0,
-                'maxfiles'              => 0,
+                'subdirs' => 0,
+                'maxbytes' => 0,
+                'maxfiles' => 0,
                 'enable_filemanagement' => false,
         ];
 
@@ -56,7 +56,8 @@ class block_my_certificates_edit_form extends block_edit_form {
             $editoroptions
         );
 
-        $mform->setType('config_text', PARAM_RAW);
+        $mform->addHelpButton('config_text', 'no_certificates', 'block_my_certificates');
+        $mform->setType('config_text', PARAM_CLEANHTML);
         $mform->addRule('config_text', null, 'required', null, 'client');
 
         $mform->addElement(
@@ -68,6 +69,7 @@ class block_my_certificates_edit_form extends block_edit_form {
                 0 => get_string('no'),
             ]
         );
+        $mform->addHelpButton('config_showallcertificates', 'showallcertificates', 'block_my_certificates');
         $mform->setDefault('config_showallcertificates', 1);
     }
 }

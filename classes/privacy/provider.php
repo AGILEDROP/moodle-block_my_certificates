@@ -18,7 +18,7 @@
  * block_my_certificates provider.php description here.
  *
  * @package    block_my_certificates
- * @copyright  Agiledrop, 2026  <developer@agiledrop.com>
+ * @copyright  Agiledrop, 2026 <developer@agiledrop.com>
  * @author     Matej Pal <matej.pal@agiledrop.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -31,7 +31,7 @@ use core_privacy\local\metadata\null_provider;
  * Privacy Subsystem for my_certificates implementing null_provider.
  *
  * @package     block_my_certificates
- * @copyright   Agiledrop, 2026  <developer@agiledrop.com>
+ * @copyright   Agiledrop, 2026 <developer@agiledrop.com>
  * @author      Matej Pal <matej.pal@agiledrop.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

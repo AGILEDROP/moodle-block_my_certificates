@@ -18,7 +18,7 @@
  * Plugin capabilities for the block_my_certificates plugin.
  *
  * @package   block_my_certificates
- * @copyright Agiledrop, 2026  <developer@agiledrop.com>
+ * @copyright Agiledrop, 2026 <developer@agiledrop.com>
  * @author    Matej Pal <matej.pal@agiledrop.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
