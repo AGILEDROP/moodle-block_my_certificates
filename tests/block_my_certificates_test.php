@@ -25,8 +25,6 @@
 
 namespace block_my_certificates;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Tests for the My Certificates block.
  *
@@ -193,7 +191,10 @@ final class block_my_certificates_test extends \advanced_testcase {
             public array $allcertificatesresult = [];
 
             /**
-             * @inheritDoc
+             * Returns mocked issued certificate data for a user.
+             *
+             * @param int $userid The user ID.
+             * @return array Issued certificate rows.
              */
             public function get_issued_for_user(int $userid): array {
                 $this->issuedforusercalls++;
@@ -201,7 +202,9 @@ final class block_my_certificates_test extends \advanced_testcase {
             }
 
             /**
-             * @inheritDoc
+             * Returns mocked certificate definitions.
+             *
+             * @return array Certificate definition rows.
              */
             public function get_all_certificates(): array {
                 $this->allcertificatescalls++;
@@ -218,14 +221,14 @@ final class block_my_certificates_test extends \advanced_testcase {
 
         // Ensure the block class is loaded before creating a test subclass.
         \block_instance('my_certificates');
-        $block = new class($provider) extends \block_my_certificates {
+        $block = new class ($provider) extends \block_my_certificates {
             /** @var \block_my_certificates\local\certificate_data_provider */
             private \block_my_certificates\local\certificate_data_provider $provider;
 
             /**
              * Constructor.
              *
-             * @param \block_my_certificates\local\certificate_data_provider $provider
+             * @param \block_my_certificates\local\certificate_data_provider $provider Certificate data provider.
              */
             public function __construct(\block_my_certificates\local\certificate_data_provider $provider) {
                 $this->provider = $provider;
@@ -233,7 +236,9 @@ final class block_my_certificates_test extends \advanced_testcase {
             }
 
             /**
-             * @inheritDoc
+             * Returns the certificate data provider.
+             *
+             * @return \block_my_certificates\local\certificate_data_provider
              */
             protected function get_certificate_data_provider(): \block_my_certificates\local\certificate_data_provider {
                 return $this->provider;
