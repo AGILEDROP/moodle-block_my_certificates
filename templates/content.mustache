@@ -1,0 +1,112 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_my_certificates/content.mustache
+
+    My Certificates block content template.
+
+    Displays a grid of user certificates with preview, details, and download link.
+
+    Classes required for JS:
+    * pdf-canvas - Canvas element for PDF preview rendering
+
+    Data attributes required for JS:
+    * data-src - URL of the PDF certificate to preview
+
+    Context variables required for this template:
+    * usercertificates - Array of user certificate objects
+    * nocertificatestext - HTML content to display when no certificates exist
+
+    Example context (json):
+    {
+        "usercertificates": [
+            {
+                "certificate": "Course Completion Certificate",
+                "course": "Introduction to Moodle",
+                "date": "01.01.2026",
+                "previewurl": "https://moodle.site/certificate.pdf"
+            }
+        ],
+        "nocertificatestext": "<p>You have no certificates yet.</p>"
+    }
+}}
+
+<div class="block-my-certificates-grid {{$classes}}{{/classes}}" data-region="certificates-grid" role="list">
+    {{#usercertificates}}
+        <div class="certificate-card-wrapper">
+            <div class="certificate-card">
+                {{!-- Certificate preview --}}
+                <div class="certificate-preview">
+                    <canvas class="pdf-canvas" data-src="{{previewurl}}" aria-label="{{certificate}}"></canvas>
+                </div>
+
+                <div class="certificate-body">
+                    <div class="certificate-content">
+                        {{!-- Certificate name --}}
+                        <h3 class="certificate-title">
+                            {{certificate}}
+                        </h3>
+
+                        {{!-- Certificate details --}}
+                        <div class="certificate-details">
+                            <div class="certificate-info-item">
+                                <span class="certificate-label">{{#str}} learning_path, block_my_certificates {{/str}}</span>
+                                <span class="certificate-value">{{course}}</span>
+                            </div>
+                            <div class="certificate-info-item">
+                                <span class="certificate-label">{{#str}} date, block_my_certificates {{/str}}</span>
+                                <span class="certificate-value">{{date}}</span>
+                            </div>
+                        </div>
+
+                        {{!-- Certificate download link --}}
+                        <div class="certificate-actions">
+                            <a href="{{previewurl}}" target="_blank" class="certificate-download-link">
+                                {{#pix}}t/download, core{{/pix}}
+                                <span class="certificate-link-label">{{#str}} download, block_my_certificates {{/str}}</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{/usercertificates}}
+    {{^usercertificates}}
+        <div class="no-certificates-message">
+            {{{nocertificatestext}}}
+        </div>
+    {{/usercertificates}}
+    {{#hasallcertificates}}
+        <div class="all-certificates-card">
+            <div class="all-certificates-header">
+                <h3 class="all-certificates-title">
+                    {{#str}} unlockmore, block_my_certificates {{/str}}
+                </h3>
+            </div>
+            <ul class="all-certificates-list">
+                {{#allcertificates}}
+                    <li class="all-certificates-item">
+                        <a href="{{viewurl}}" class="all-certificates-link">
+                            <span class="all-certificates-name">{{name}}</span>
+                            <span class="all-certificates-chevron" aria-hidden="true"></span>
+                        </a>
+                    </li>
+                {{/allcertificates}}
+            </ul>
+        </div>
+    {{/hasallcertificates}}
+</div>
