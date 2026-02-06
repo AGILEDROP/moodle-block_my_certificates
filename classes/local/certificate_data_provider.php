@@ -47,7 +47,7 @@ class certificate_data_provider {
               FROM {customcert_issues} ci
         INNER JOIN {customcert} cc ON cc.id = ci.customcertid
         INNER JOIN {course} c ON c.id = cc.course
-        INNER JOIN {course_modules} cm ON cm.instance = cc.id
+        INNER JOIN {course_modules} cm ON cm.instance = cc.id AND cm.course = cc.course
         INNER JOIN {modules} m ON m.id = cm.module AND m.name = 'customcert'
              WHERE ci.userid = :userid
           ORDER BY ci.timecreated DESC";

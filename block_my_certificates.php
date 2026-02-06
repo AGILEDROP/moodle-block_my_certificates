@@ -80,14 +80,19 @@ class block_my_certificates extends block_base {
         }
 
         $provider = $this->get_certificate_data_provider();
-        $allcertificates = $provider->get_all_certificates();
+        $showallcertificates = !empty($this->config->showallcertificates);
         $usercertificates = $provider->get_issued_for_user($USER->id);
 
         $diffuservsallcerts = [];
 
-        foreach ($allcertificates as $certificate) {
-            if (!in_array($certificate['id'], array_column($usercertificates, 'customcertid'))) {
-                $diffuservsallcerts[] = $certificate;
+        if ($showallcertificates) {
+            $allcertificates = $provider->get_all_certificates();
+            $issuedcustomcertids = array_flip(array_column($usercertificates, 'customcertid'));
+
+            foreach ($allcertificates as $certificate) {
+                if (!isset($issuedcustomcertids[$certificate['id']])) {
+                    $diffuservsallcerts[] = $certificate;
+                }
             }
         }
 
@@ -107,8 +112,6 @@ class block_my_certificates extends block_base {
             $nocertificatestext['format'],
             ['context' => $this->context],
         );
-
-        $showallcertificates = !empty($this->config->showallcertificates);
 
         $data = [
             'usercertificates' => $usercertificates,
