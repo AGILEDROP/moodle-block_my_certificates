@@ -79,9 +79,9 @@ class block_my_certificates extends block_base {
             return $this->content;
         }
 
-        $allcertificates = $this->get_all_certificates();
-
-        $usercertificates = $this->get_issued_for_user($USER->id);
+        $provider = $this->get_certificate_data_provider();
+        $allcertificates = $provider->get_all_certificates();
+        $usercertificates = $provider->get_issued_for_user($USER->id);
 
         $diffuservsallcerts = [];
 
@@ -138,84 +138,12 @@ class block_my_certificates extends block_base {
     }
 
     /**
-     * Returns all certificates issued to a specific user, ordered by the most recent first.
+     * Creates the certificate data provider.
      *
-     * Builds a render-friendly structure for each issue, including certificate and course
-     * metadata, formatted date, and direct links to download and verify the certificate.
-     *
-     * @param int $userid The Moodle user ID whose certificate issues will be retrieved.
-     * @return array List of certificate issue data.
+     * @return \block_my_certificates\local\certificate_data_provider
      */
-    protected function get_issued_for_user(int $userid): array {
-        global $DB;
-
-        $sql = "SELECT ci.id AS issueid,
-                   ci.timecreated,
-                   ci.code,
-                   cc.id AS customcertid,
-                   cc.name AS certname,
-                   c.id AS courseid,
-                   c.fullname AS coursename,
-                   cm.id AS cmid
-              FROM {customcert_issues} ci
-              JOIN {customcert} cc ON cc.id = ci.customcertid
-              JOIN {course} c ON c.id = cc.course
-              JOIN {course_modules} cm ON cm.instance = cc.id
-              JOIN {modules} m ON m.id = cm.module AND m.name = 'customcert'
-             WHERE ci.userid = :userid
-          ORDER BY ci.timecreated DESC";
-
-        $records = $DB->get_records_sql($sql, ['userid' => $userid]);
-
-        $out = [];
-        foreach ($records as $r) {
-            $previewurl = new moodle_url('/mod/customcert/view.php', ['id' => $r->cmid, 'downloadown' => 1]);
-
-            $out[] = [
-                    'certificate' => $r->certname,
-                    'course' => $r->coursename,
-                    'courseid' => $r->courseid,
-                    'customcertid' => $r->customcertid,
-                    'timecreated' => $r->timecreated,
-                    'date' => userdate($r->timecreated, get_string('strftimedateshort')),
-                    'previewurl' => $previewurl->out(false),
-            ];
-        }
-        return $out;
-    }
-
-    /**
-     * Returns a list of all custom certificate definitions available site-wide.
-     *
-     * Each item includes the certificate ID, name, a link to the course page, and a link
-     * to the certificate activity view page when the course module exists (empty string otherwise).
-     *
-     * @return array List of certificate metadata.
-     */
-    protected function get_all_certificates(): array {
-        global $DB;
-
-        $certificates = $DB->get_records('customcert', null, '', 'id, name, course');
-
-        $certificatesdata = [];
-        foreach ($certificates as $certificate) {
-            $courseurl = (new moodle_url('/course/view.php', ['id' => $certificate->course]))->out(false);
-
-            $viewurl = '';
-
-            if ($cm = get_coursemodule_from_instance('customcert', $certificate->id, $certificate->course, false, IGNORE_MISSING)) {
-                $viewurl = (new moodle_url('/mod/customcert/view.php', ['id' => $cm->id]))->out(false);
-            }
-
-            $certificatesdata[] = [
-                    'id' => $certificate->id,
-                    'name' => $certificate->name,
-                    'courseurl' => $courseurl,
-                    'viewurl' => $viewurl,
-            ];
-        }
-
-        return $certificatesdata;
+    protected function get_certificate_data_provider(): \block_my_certificates\local\certificate_data_provider {
+        return new \block_my_certificates\local\certificate_data_provider();
     }
 
     /**

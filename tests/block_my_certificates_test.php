@@ -27,21 +27,17 @@ namespace block_my_certificates;
 
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-require_once($CFG->dirroot . '/lib/blocklib.php');
-require_once($CFG->dirroot . '/blocks/moodleblock.class.php');
-require_once($CFG->dirroot . '/blocks/my_certificates/block_my_certificates.php');
-
 /**
  * Tests for the My Certificates block.
  *
+ * @covers \block_my_certificates\local\certificate_data_provider
  * @covers \block_my_certificates
  */
 final class block_my_certificates_test extends \advanced_testcase {
     /**
      * Ensure issued certificates are returned with expected fields and order.
      *
-     * @covers \block_my_certificates::get_issued_for_user
+     * @covers \block_my_certificates\local\certificate_data_provider::get_issued_for_user
      */
     public function test_get_issued_for_user_returns_ordered_data(): void {
         global $DB;
@@ -75,10 +71,8 @@ final class block_my_certificates_test extends \advanced_testcase {
             'timecreated' => $now,
         ]);
 
-        $block = new \block_my_certificates();
-        $method = new \ReflectionMethod($block, 'get_issued_for_user');
-        $method->setAccessible(true);
-        $issued = $method->invoke($block, $user->id);
+        $provider = new \block_my_certificates\local\certificate_data_provider();
+        $issued = $provider->get_issued_for_user($user->id);
 
         $this->assertCount(2, $issued);
         $this->assertSame('Certificate 2', $issued[0]['certificate']);
@@ -94,7 +88,7 @@ final class block_my_certificates_test extends \advanced_testcase {
     /**
      * Ensure all certificates include course and view URLs when module exists.
      *
-     * @covers \block_my_certificates::get_all_certificates
+     * @covers \block_my_certificates\local\certificate_data_provider::get_all_certificates
      */
     public function test_get_all_certificates_returns_view_urls(): void {
         $this->resetAfterTest(true);
@@ -111,10 +105,8 @@ final class block_my_certificates_test extends \advanced_testcase {
             'name' => 'Certificate B',
         ]);
 
-        $block = new \block_my_certificates();
-        $method = new \ReflectionMethod($block, 'get_all_certificates');
-        $method->setAccessible(true);
-        $certs = $method->invoke($block);
+        $provider = new \block_my_certificates\local\certificate_data_provider();
+        $certs = $provider->get_all_certificates();
 
         $this->assertCount(2, $certs);
         foreach ($certs as $cert) {
@@ -148,14 +140,16 @@ final class block_my_certificates_test extends \advanced_testcase {
         $page->set_context(\context_system::instance());
         $page->set_pagelayout('standard');
 
-        $block = new \block_my_certificates();
+        $block = block_instance('my_certificates');
+        $this->assertInstanceOf(\block_base::class, $block);
         $block->page = $page;
         $block->config = (object) ['showallcertificates' => 0];
         $content = $block->get_content();
         $this->assertNotEmpty($content);
         $this->assertStringNotContainsString('all-certificates-card', $content->text);
 
-        $block = new \block_my_certificates();
+        $block = block_instance('my_certificates');
+        $this->assertInstanceOf(\block_base::class, $block);
         $block->page = $page;
         $block->config = (object) ['showallcertificates' => 1];
         $content = $block->get_content();
