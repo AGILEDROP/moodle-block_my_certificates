@@ -127,9 +127,15 @@ jobs:
       - name: Add required plugin dependencies
         run: |
           set -x
-          if ! moodle-plugin-ci add-plugin --branch "${MOODLE_BRANCH}" mdjnelson/moodle-mod_customcert; then
-            moodle-plugin-ci add-plugin mdjnelson/moodle-mod_customcert
+          CUSTOMCERT_BRANCH="MOODLE_500_STABLE"
+          CUSTOMCERT_VERSION="2025041404"
+          if [[ "${MOODLE_BRANCH}" == "MOODLE_405_STABLE" ]]; then
+            CUSTOMCERT_BRANCH="MOODLE_405_STABLE"
+            CUSTOMCERT_VERSION="2024042216"
           fi
+          moodle-plugin-ci add-plugin --branch "${CUSTOMCERT_BRANCH}" mdjnelson/moodle-mod_customcert
+          grep -Eq "\$plugin->version[[:space:]]*=[[:space:]]*${CUSTOMCERT_VERSION};" \
+            moodle-plugin-ci-plugins/moodle-mod_customcert/version.php
         env:
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
 
@@ -148,32 +154,32 @@ jobs:
 
       - name: Run phplint
         if: ${{ always() }}
-        run: moodle-plugin-ci phplint
+        run: moodle-plugin-ci phplint --plugin .
 
       - name: Run phpcpd
         if: ${{ always() }}
-        run: moodle-plugin-ci phpcpd || true
+        run: moodle-plugin-ci phpcpd --plugin . || true
 
       - name: Run phpmd
         if: ${{ always() }}
-        run: moodle-plugin-ci phpmd
+        run: moodle-plugin-ci phpmd --plugin .
 
       - name: Run codechecker
         if: ${{ always() }}
-        run: moodle-plugin-ci codechecker
+        run: moodle-plugin-ci codechecker --plugin .
 
       - name: Run validate
         if: ${{ always() }}
-        run: moodle-plugin-ci validate
+        run: moodle-plugin-ci validate --plugin .
 
       - name: Run savepoints
         if: ${{ always() }}
-        run: moodle-plugin-ci savepoints
+        run: moodle-plugin-ci savepoints --plugin .
 
       - name: Run phpdoc
         if: ${{ always() }}
-        run: moodle-plugin-ci phpdoc
+        run: moodle-plugin-ci phpdoc --plugin .
 
       - name: Run phpunit
         if: ${{ always() }}
-        run: moodle-plugin-ci phpunit
+        run: moodle-plugin-ci phpunit --plugin .
