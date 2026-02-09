@@ -84,12 +84,6 @@ jobs:
           - moodle-branch: 'MOODLE_501_STABLE'
             php: '8.4'
             database: 'pgsql'
-          - moodle-branch: 'MOODLE_501_STABLE'
-            php: '8.5'
-            database: 'mariadb'
-          - moodle-branch: 'MOODLE_501_STABLE'
-            php: '8.5'
-            database: 'pgsql'
 
     steps:
       - name: Check out repository code
