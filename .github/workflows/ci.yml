@@ -50,12 +50,6 @@ jobs:
             php: '8.3'
             database: 'pgsql'
           - moodle-branch: 'MOODLE_500_STABLE'
-            php: '8.1'
-            database: 'mariadb'
-          - moodle-branch: 'MOODLE_500_STABLE'
-            php: '8.1'
-            database: 'pgsql'
-          - moodle-branch: 'MOODLE_500_STABLE'
             php: '8.2'
             database: 'mariadb'
           - moodle-branch: 'MOODLE_500_STABLE'
@@ -72,12 +66,6 @@ jobs:
             database: 'mariadb'
           - moodle-branch: 'MOODLE_500_STABLE'
             php: '8.4'
-            database: 'pgsql'
-          - moodle-branch: 'MOODLE_501_STABLE'
-            php: '8.1'
-            database: 'mariadb'
-          - moodle-branch: 'MOODLE_501_STABLE'
-            php: '8.1'
             database: 'pgsql'
           - moodle-branch: 'MOODLE_501_STABLE'
             php: '8.2'
@@ -151,7 +139,7 @@ jobs:
             --plugin ./ \
             --moodle "$MOODLE_DIR" \
             --data "$MOODLEDATA_DIR" \
-            --not-paths moodle,ci,node_modules,vendor \
+            --not-paths moodle,ci,node_modules,vendor,moodle-plugin-ci-plugins \
             --db-host=127.0.0.1
         env:
           DB: ${{ matrix.database }}
