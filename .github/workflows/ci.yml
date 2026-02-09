@@ -5,6 +5,10 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      MOODLE_DIR: ../moodle
+      MOODLEDATA_DIR: ../moodledata
+      PLUGIN_DIR: ../moodle/blocks/my_certificates
     services:
       postgres:
         image: postgres:14
@@ -127,15 +131,26 @@ jobs:
       - name: Add required plugin dependencies
         run: |
           set -x
-          CUSTOMCERT_BRANCH="MOODLE_500_STABLE"
-          CUSTOMCERT_VERSION="2025041404"
+          moodle-plugin-ci add-plugin mdjnelson/moodle-mod_customcert
+
+          # Pin to a Moodle-compatible customcert release.
           if [[ "${MOODLE_BRANCH}" == "MOODLE_405_STABLE" ]]; then
-            CUSTOMCERT_BRANCH="MOODLE_405_STABLE"
-            CUSTOMCERT_VERSION="2024042216"
+            (
+              cd moodle-plugin-ci-plugins/moodle-mod_customcert
+              git fetch --all --tags
+              git checkout MOODLE_404_STABLE || git checkout v4.4.8 || git checkout 4.4.8
+            )
+            grep -Eq "\$plugin->version[[:space:]]*=[[:space:]]*2024042216;" \
+              moodle-plugin-ci-plugins/moodle-mod_customcert/version.php
+          else
+            (
+              cd moodle-plugin-ci-plugins/moodle-mod_customcert
+              git fetch --all --tags
+              git checkout MOODLE_500_STABLE || git checkout v5.0.2 || git checkout 5.0.2
+            )
+            grep -Eq "\$plugin->version[[:space:]]*=[[:space:]]*2025041404;" \
+              moodle-plugin-ci-plugins/moodle-mod_customcert/version.php
           fi
-          moodle-plugin-ci add-plugin --branch "${CUSTOMCERT_BRANCH}" mdjnelson/moodle-mod_customcert
-          grep -Eq "\$plugin->version[[:space:]]*=[[:space:]]*${CUSTOMCERT_VERSION};" \
-            moodle-plugin-ci-plugins/moodle-mod_customcert/version.php
         env:
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
 
@@ -144,8 +159,8 @@ jobs:
           set -x
           moodle-plugin-ci install -vvv \
             --plugin ./ \
-            --moodle ../moodle \
-            --data ../moodledata \
+            --moodle "$MOODLE_DIR" \
+            --data "$MOODLEDATA_DIR" \
             --not-paths moodle,ci,node_modules,vendor \
             --db-host=127.0.0.1
         env:
@@ -154,32 +169,32 @@ jobs:
 
       - name: Run phplint
         if: ${{ always() }}
-        run: moodle-plugin-ci phplint --plugin .
+        run: moodle-plugin-ci phplint "$PLUGIN_DIR"
 
       - name: Run phpcpd
         if: ${{ always() }}
-        run: moodle-plugin-ci phpcpd --plugin . || true
+        run: moodle-plugin-ci phpcpd "$PLUGIN_DIR" || true
 
       - name: Run phpmd
         if: ${{ always() }}
-        run: moodle-plugin-ci phpmd --plugin .
+        run: moodle-plugin-ci phpmd --moodle "$MOODLE_DIR" "$PLUGIN_DIR"
 
       - name: Run codechecker
         if: ${{ always() }}
-        run: moodle-plugin-ci codechecker --plugin .
+        run: moodle-plugin-ci codechecker "$PLUGIN_DIR"
 
       - name: Run validate
         if: ${{ always() }}
-        run: moodle-plugin-ci validate --plugin .
+        run: moodle-plugin-ci validate --moodle "$MOODLE_DIR" "$PLUGIN_DIR"
 
       - name: Run savepoints
         if: ${{ always() }}
-        run: moodle-plugin-ci savepoints --plugin .
+        run: moodle-plugin-ci savepoints "$PLUGIN_DIR"
 
       - name: Run phpdoc
         if: ${{ always() }}
-        run: moodle-plugin-ci phpdoc --plugin .
+        run: moodle-plugin-ci phpdoc --moodle "$MOODLE_DIR" "$PLUGIN_DIR"
 
       - name: Run phpunit
         if: ${{ always() }}
-        run: moodle-plugin-ci phpunit --plugin .
+        run: moodle-plugin-ci phpunit --moodle "$MOODLE_DIR" "$PLUGIN_DIR"
