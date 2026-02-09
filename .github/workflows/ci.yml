@@ -10,7 +10,7 @@ jobs:
       MOODLEDATA_DIR: ../moodledata
     services:
       postgres:
-        image: postgres:14
+        image: postgres:15
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
@@ -118,10 +118,12 @@ jobs:
       - name: Add required plugin dependencies
         run: |
           set -x
-          moodle-plugin-ci add-plugin mdjnelson/moodle-mod_customcert
+          EXTRAPLUGINS_DIR=/tmp/moodle-plugin-ci-plugins
+          rm -rf "$EXTRAPLUGINS_DIR"
+          moodle-plugin-ci add-plugin --storage "$EXTRAPLUGINS_DIR" mdjnelson/moodle-mod_customcert
 
           # Pin to a Moodle-compatible customcert release.
-          cd moodle-plugin-ci-plugins/moodle-mod_customcert
+          cd "$EXTRAPLUGINS_DIR/moodle-mod_customcert"
           git fetch --all --tags
           if [[ "${MOODLE_BRANCH}" == "MOODLE_405_STABLE" ]]; then
             git checkout v4.4.8
@@ -138,15 +140,12 @@ jobs:
             --plugin ./ \
             --moodle "$MOODLE_DIR" \
             --data "$MOODLEDATA_DIR" \
-            --not-paths moodle,ci,node_modules,vendor,moodle-plugin-ci-plugins \
+            --not-paths moodle,ci,node_modules,vendor \
+            --extra-plugins /tmp/moodle-plugin-ci-plugins \
             --db-host=127.0.0.1
         env:
           DB: ${{ matrix.database }}
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
-
-      - name: Remove transient plugin dependency checkout
-        if: ${{ always() }}
-        run: rm -rf moodle-plugin-ci-plugins
 
       - name: Run phplint
         if: ${{ always() }}
