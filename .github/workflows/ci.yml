@@ -134,22 +134,12 @@ jobs:
           moodle-plugin-ci add-plugin mdjnelson/moodle-mod_customcert
 
           # Pin to a Moodle-compatible customcert release.
+          cd moodle-plugin-ci-plugins/moodle-mod_customcert
+          git fetch --all --tags
           if [[ "${MOODLE_BRANCH}" == "MOODLE_405_STABLE" ]]; then
-            (
-              cd moodle-plugin-ci-plugins/moodle-mod_customcert
-              git fetch --all --tags
-              git checkout MOODLE_404_STABLE || git checkout v4.4.8 || git checkout 4.4.8
-            )
-            grep -Eq "\$plugin->version[[:space:]]*=[[:space:]]*2024042216;" \
-              moodle-plugin-ci-plugins/moodle-mod_customcert/version.php
+            git checkout v4.4.8
           else
-            (
-              cd moodle-plugin-ci-plugins/moodle-mod_customcert
-              git fetch --all --tags
-              git checkout MOODLE_500_STABLE || git checkout v5.0.2 || git checkout 5.0.2
-            )
-            grep -Eq "\$plugin->version[[:space:]]*=[[:space:]]*2025041404;" \
-              moodle-plugin-ci-plugins/moodle-mod_customcert/version.php
+            git checkout v5.0.2
           fi
         env:
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
