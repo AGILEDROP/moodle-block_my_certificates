@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 $string['customcert_not_available'] = 'The Custom Certificate module is not installed or is disabled. This block requires the Custom Certificate module to function.';
 $string['date'] = 'Date: ';
 $string['download'] = 'Download certificate';
-$string['learning_path'] = 'Learning path: ';
+$string['course'] = 'Course: ';
 $string['my_certificates:addinstance'] = 'Add a new My Certificates block';
 $string['my_certificates:myaddinstance'] = 'Add a new My Certificates block to the My Moodle page';
 $string['no_certificates'] = 'No certificates text';
