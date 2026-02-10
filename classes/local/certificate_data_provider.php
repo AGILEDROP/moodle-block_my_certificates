@@ -16,8 +16,6 @@
 
 namespace block_my_certificates\local;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data provider for certificates displayed by the My Certificates block.
  *

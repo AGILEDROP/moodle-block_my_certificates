@@ -25,8 +25,6 @@
 
 namespace block_my_certificates;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Tests for the My Certificates block.
  *
@@ -34,6 +32,122 @@ defined('MOODLE_INTERNAL') || die();
  * @covers \block_my_certificates
  */
 final class block_my_certificates_test extends \advanced_testcase {
+    /**
+     * Whether the test environment provides mod_customcert with a PHPUnit generator.
+     *
+     * @return bool
+     */
+    private function has_customcert_generator(): bool {
+        global $CFG, $DB;
+
+        if (!$DB->record_exists('modules', ['name' => 'customcert', 'visible' => 1])) {
+            return false;
+        }
+
+        return is_readable($CFG->dirroot . '/mod/customcert/tests/generator/lib.php');
+    }
+
+    /**
+     * Creates a provider test double with call counters.
+     *
+     * @param array $issued Returned data for get_issued_for_user().
+     * @param array $all Returned data for get_all_certificates().
+     * @return \block_my_certificates\local\certificate_data_provider
+     */
+    private function create_provider_stub(
+        array $issued = [],
+        array $all = []
+    ): \block_my_certificates\local\certificate_data_provider {
+        return new class ($issued, $all) extends \block_my_certificates\local\certificate_data_provider {
+            /** @var int Number of get_issued_for_user() calls. */
+            public int $issuedforusercalls = 0;
+            /** @var int Number of get_all_certificates() calls. */
+            public int $allcertificatescalls = 0;
+            /** @var array */
+            private array $issuedforuserresult;
+            /** @var array */
+            private array $allcertificatesresult;
+
+            /**
+             * Constructor.
+             *
+             * @param array $issued Returned data for get_issued_for_user().
+             * @param array $all Returned data for get_all_certificates().
+             */
+            public function __construct(array $issued, array $all) {
+                $this->issuedforuserresult = $issued;
+                $this->allcertificatesresult = $all;
+            }
+
+            /**
+             * Returns mocked issued certificate data for a user.
+             *
+             * @param int $userid The user ID.
+             * @return array Issued certificate rows.
+             */
+            public function get_issued_for_user(int $userid): array {
+                $this->issuedforusercalls++;
+                return $this->issuedforuserresult;
+            }
+
+            /**
+             * Returns mocked certificate definitions.
+             *
+             * @return array Certificate definition rows.
+             */
+            public function get_all_certificates(): array {
+                $this->allcertificatescalls++;
+                return $this->allcertificatesresult;
+            }
+        };
+    }
+
+    /**
+     * Creates a block instance that uses the supplied provider and bypasses mod_customcert availability checks.
+     *
+     * @param \block_my_certificates\local\certificate_data_provider $provider Certificate data provider.
+     * @return \block_my_certificates
+     */
+    private function create_block_with_provider(
+        \block_my_certificates\local\certificate_data_provider $provider
+    ): \block_my_certificates {
+        // Ensure the block class is loaded before creating a test subclass.
+        \block_instance('my_certificates');
+
+        return new class ($provider) extends \block_my_certificates {
+            /** @var \block_my_certificates\local\certificate_data_provider */
+            private \block_my_certificates\local\certificate_data_provider $provider;
+
+            /**
+             * Constructor.
+             *
+             * @param \block_my_certificates\local\certificate_data_provider $provider Certificate data provider.
+             */
+            public function __construct(\block_my_certificates\local\certificate_data_provider $provider) {
+                $this->provider = $provider;
+                parent::__construct();
+            }
+
+            /**
+             * Returns the certificate data provider.
+             *
+             * @return \block_my_certificates\local\certificate_data_provider
+             */
+            protected function get_certificate_data_provider(): \block_my_certificates\local\certificate_data_provider {
+                return $this->provider;
+            }
+
+            /**
+             * Forces module availability in block-focused unit tests.
+             *
+             * @return bool
+             */
+            protected function is_customcert_available(): bool {
+                return true;
+            }
+        };
+    }
+
     /**
      * Ensure issued certificates are returned with expected fields and order.
      *
@@ -43,6 +157,11 @@ final class block_my_certificates_test extends \advanced_testcase {
         global $DB;
 
         $this->resetAfterTest(true);
+
+        $this->assertTrue(
+            $this->has_customcert_generator(),
+            'mod_customcert generator is required for this test. Ensure CI installs mdjnelson/moodle-mod_customcert.'
+        );
 
         $generator = $this->getDataGenerator();
         $user = $generator->create_user();
@@ -93,6 +212,11 @@ final class block_my_certificates_test extends \advanced_testcase {
     public function test_get_all_certificates_returns_view_urls(): void {
         $this->resetAfterTest(true);
 
+        $this->assertTrue(
+            $this->has_customcert_generator(),
+            'mod_customcert generator is required for this test. Ensure CI installs mdjnelson/moodle-mod_customcert.'
+        );
+
         $generator = $this->getDataGenerator();
         $course = $generator->create_course();
 
@@ -127,12 +251,6 @@ final class block_my_certificates_test extends \advanced_testcase {
 
         $generator = $this->getDataGenerator();
         $user = $generator->create_user();
-        $course = $generator->create_course();
-        $generator->create_module('customcert', [
-            'course' => $course->id,
-            'name' => 'Certificate A',
-        ]);
-
         $this->setUser($user);
 
         $page = new \moodle_page();
@@ -140,7 +258,13 @@ final class block_my_certificates_test extends \advanced_testcase {
         $page->set_context(\context_system::instance());
         $page->set_pagelayout('standard');
 
-        $block = \block_instance('my_certificates');
+        $providerdisabled = $this->create_provider_stub([], [[
+            'id' => 1,
+            'name' => 'Certificate A',
+            'courseurl' => '/course/view.php?id=2',
+            'viewurl' => '/mod/customcert/view.php?id=10',
+        ]]);
+        $block = $this->create_block_with_provider($providerdisabled);
         $this->assertInstanceOf(\block_base::class, $block);
         $block->page = $page;
         $block->context = \context_system::instance();
@@ -148,8 +272,16 @@ final class block_my_certificates_test extends \advanced_testcase {
         $content = $block->get_content();
         $this->assertNotEmpty($content);
         $this->assertStringNotContainsString('all-certificates-card', $content->text);
+        $this->assertSame(1, $providerdisabled->issuedforusercalls);
+        $this->assertSame(0, $providerdisabled->allcertificatescalls);
 
-        $block = \block_instance('my_certificates');
+        $providerenabled = $this->create_provider_stub([], [[
+            'id' => 1,
+            'name' => 'Certificate A',
+            'courseurl' => '/course/view.php?id=2',
+            'viewurl' => '/mod/customcert/view.php?id=10',
+        ]]);
+        $block = $this->create_block_with_provider($providerenabled);
         $this->assertInstanceOf(\block_base::class, $block);
         $block->page = $page;
         $block->context = \context_system::instance();
@@ -157,6 +289,8 @@ final class block_my_certificates_test extends \advanced_testcase {
         $content = $block->get_content();
         $this->assertNotEmpty($content);
         $this->assertStringContainsString('all-certificates-card', $content->text);
+        $this->assertSame(1, $providerenabled->issuedforusercalls);
+        $this->assertSame(1, $providerenabled->allcertificatescalls);
     }
 
     /**
@@ -169,12 +303,6 @@ final class block_my_certificates_test extends \advanced_testcase {
 
         $generator = $this->getDataGenerator();
         $user = $generator->create_user();
-        $course = $generator->create_course();
-        $generator->create_module('customcert', [
-            'course' => $course->id,
-            'name' => 'Certificate A',
-        ]);
-
         $this->setUser($user);
 
         $page = new \moodle_page();
@@ -182,63 +310,14 @@ final class block_my_certificates_test extends \advanced_testcase {
         $page->set_context(\context_system::instance());
         $page->set_pagelayout('standard');
 
-        $provider = new class extends \block_my_certificates\local\certificate_data_provider {
-            /** @var int Number of get_issued_for_user() calls. */
-            public int $issuedforusercalls = 0;
-            /** @var int Number of get_all_certificates() calls. */
-            public int $allcertificatescalls = 0;
-            /** @var array Return value for get_issued_for_user(). */
-            public array $issuedforuserresult = [];
-            /** @var array Return value for get_all_certificates(). */
-            public array $allcertificatesresult = [];
-
-            /**
-             * @inheritDoc
-             */
-            public function get_issued_for_user(int $userid): array {
-                $this->issuedforusercalls++;
-                return $this->issuedforuserresult;
-            }
-
-            /**
-             * @inheritDoc
-             */
-            public function get_all_certificates(): array {
-                $this->allcertificatescalls++;
-                return $this->allcertificatesresult;
-            }
-        };
-        $provider->issuedforuserresult = [];
-        $provider->allcertificatesresult = [[
+        $provider = $this->create_provider_stub([], [[
             'id' => 1,
             'name' => 'Certificate X',
-            'courseurl' => '',
-            'viewurl' => '',
-        ]];
+            'courseurl' => '/course/view.php?id=2',
+            'viewurl' => '/mod/customcert/view.php?id=10',
+        ]]);
 
-        // Ensure the block class is loaded before creating a test subclass.
-        \block_instance('my_certificates');
-        $block = new class($provider) extends \block_my_certificates {
-            /** @var \block_my_certificates\local\certificate_data_provider */
-            private \block_my_certificates\local\certificate_data_provider $provider;
-
-            /**
-             * Constructor.
-             *
-             * @param \block_my_certificates\local\certificate_data_provider $provider
-             */
-            public function __construct(\block_my_certificates\local\certificate_data_provider $provider) {
-                $this->provider = $provider;
-                parent::__construct();
-            }
-
-            /**
-             * @inheritDoc
-             */
-            protected function get_certificate_data_provider(): \block_my_certificates\local\certificate_data_provider {
-                return $this->provider;
-            }
-        };
+        $block = $this->create_block_with_provider($provider);
         $block->page = $page;
         $block->context = \context_system::instance();
         $block->config = (object) ['showallcertificates' => 0];
