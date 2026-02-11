@@ -8,9 +8,13 @@ Ideal for dashboards, course pages, and the site home page, it highlights comple
 
 - **Certificate Grid**: Displays earned certificates in a responsive card layout
 - **PDF Previews**: Renders certificate previews in-browser with PDF.js
+- **Template Certificate Names**: Shows certificate template name (fallback to activity name when needed)
 - **Download Links**: One-click access to the official certificate PDF
-- **Configurable Empty State**: Custom “no certificates” message per block instance
-- **Optional “Unlock More” Section**: Show additional available certificates
+- **Configurable Empty State**: Rich-text "no certificates" message per block instance
+- **Custom Block Title**: Optional per-instance block title
+- **Display Toggles**: Fine-grained controls for card fields and the "all certificates" list
+- **Color Customization**: Gradient/monotone styles for main cards and all-certificates section
+- **Reset Colors Button**: One-click reset of all style fields to defaults
 - **Accessible Markup**: Semantic structure and ARIA-friendly output
 
 ## Requirements
@@ -55,14 +59,43 @@ $ php admin/cli/upgrade.php
 
 In the block configuration you can:
 
-- Set the **No certificates text** message (HTML supported)
+- Set a custom **Block title**
+- Set the **No certificates text** using the rich text editor
 - Enable/disable the **Show all certificates** section
+
+#### Certificate card display options
+
+- Show/hide certificate preview
+- Show/hide certificate name
+- Show/hide course name
+- Show/hide certificate date
+- Show/hide download button
+
+#### All certificates list display options
+
+- Show/hide certificate name in list rows
+- Show/hide course name in list rows
+
+#### Color settings (accordion section)
+
+- Main certificate card:
+  - Gradient or monotone mode
+  - Gradient direction
+  - Gradient start/end colors
+- All certificates section:
+  - Gradient or monotone mode
+  - Gradient direction
+  - Card background gradient start/end colors
+  - Row background and hover background colors
+  - Accent color
+- **Reset colors to defaults** button for all color fields
 
 ## Notes
 
 - The block does not create new database tables.
 - All certificate data is read from Custom Certificate tables.
 - PDF rendering is client-side using PDF.js.
+- If UI text or styling changes are not visible immediately, purge Moodle caches.
 
 ## Privacy
 
