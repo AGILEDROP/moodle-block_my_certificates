@@ -39,6 +39,17 @@ class block_my_certificates extends block_base {
     }
 
     /**
+     * Specialise this block's title based on instance config.
+     */
+    public function specialization() {
+        if (!empty($this->config->title)) {
+            $this->title = format_string($this->config->title, true, ['context' => $this->context]);
+        } else {
+            $this->title = '';
+        }
+    }
+
+    /**
      * Indicates that this block has global configuration settings.
      *
      * @return bool False - no global config, only instance config
@@ -80,7 +91,8 @@ class block_my_certificates extends block_base {
         }
 
         $provider = $this->get_certificate_data_provider();
-        $showallcertificates = !empty($this->config->showallcertificates);
+        $displaysettings = $this->get_display_settings();
+        $showallcertificates = $displaysettings['showallcertificates'];
         $usercertificates = $provider->get_issued_for_user($USER->id);
 
         $diffuservsallcerts = [];
@@ -96,16 +108,26 @@ class block_my_certificates extends block_base {
             }
         }
 
-        $this->page->requires->js(new moodle_url('/blocks/my_certificates/thirdparty/pdfjs/pdf.min.js'), true);
+        if ($displaysettings['showcertificatepreview'] && !empty($usercertificates)) {
+            $this->page->requires->js(new moodle_url('/blocks/my_certificates/thirdparty/pdfjs/pdf.min.js'), true);
 
-        $this->page->requires->js_call_amd('block_my_certificates/pdf_preview', 'init', [
-            'workersrc' => (new moodle_url('/blocks/my_certificates/thirdparty/pdfjs/pdf.worker.min.js'))->out(false),
-        ]);
+            $this->page->requires->js_call_amd('block_my_certificates/pdf_preview', 'init', [
+                'workersrc' => (new moodle_url('/blocks/my_certificates/thirdparty/pdfjs/pdf.worker.min.js'))->out(false),
+            ]);
+        }
 
         $this->content = new stdClass();
         $this->content->footer = '';
 
-        $nocertificatestext = $this->config->text ?? ['text' => '', 'format' => FORMAT_HTML];
+        $defaultnocertificatestext = [
+            'text' => get_string('default_no_certificates_text', 'block_my_certificates'),
+            'format' => FORMAT_HTML,
+        ];
+        $nocertificatestext = $this->config->text ?? $defaultnocertificatestext;
+
+        if (trim((string)($nocertificatestext['text'] ?? '')) === '') {
+            $nocertificatestext = $defaultnocertificatestext;
+        }
 
         $safehtml = format_text(
             $nocertificatestext['text'],
@@ -118,6 +140,13 @@ class block_my_certificates extends block_base {
             'allcertificates' => $diffuservsallcerts,
             'hasallcertificates' => $showallcertificates && !empty($diffuservsallcerts),
             'nocertificatestext' => $safehtml,
+            'showcertificatepreview' => $displaysettings['showcertificatepreview'],
+            'showcertificatename' => $displaysettings['showcertificatename'],
+            'showcoursename' => $displaysettings['showcoursename'],
+            'showcertificatedate' => $displaysettings['showcertificatedate'],
+            'showdownloadbutton' => $displaysettings['showdownloadbutton'],
+            'showalllistcertificatename' => $displaysettings['showalllistcertificatename'],
+            'showalllistcoursename' => $displaysettings['showalllistcoursename'],
         ];
 
         $this->content->text = $OUTPUT->render_from_template('block_my_certificates/content', $data);
@@ -164,5 +193,49 @@ class block_my_certificates extends block_base {
         }
 
         return $available;
+    }
+
+    /**
+     * Returns effective display settings with defaults for existing block instances.
+     *
+     * @return array<string, bool>
+     */
+    protected function get_display_settings(): array {
+        $defaults = [
+            'showallcertificates' => true,
+            'showcertificatepreview' => true,
+            'showcertificatename' => true,
+            'showcoursename' => true,
+            'showcertificatedate' => true,
+            'showdownloadbutton' => true,
+            'showalllistcertificatename' => true,
+            'showalllistcoursename' => true,
+        ];
+
+        $settings = [];
+        foreach ($defaults as $setting => $defaultvalue) {
+            $settings[$setting] = $this->get_config_bool($setting, $defaultvalue);
+        }
+
+        if (!$settings['showalllistcertificatename'] && !$settings['showalllistcoursename']) {
+            $settings['showalllistcertificatename'] = true;
+        }
+
+        return $settings;
+    }
+
+    /**
+     * Resolves a boolean setting from block instance config.
+     *
+     * @param string $setting Setting name.
+     * @param bool $defaultvalue Default when not configured.
+     * @return bool
+     */
+    protected function get_config_bool(string $setting, bool $defaultvalue): bool {
+        if (empty($this->config) || !property_exists($this->config, $setting)) {
+            return $defaultvalue;
+        }
+
+        return !empty($this->config->{$setting});
     }
 }

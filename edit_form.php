@@ -40,6 +40,15 @@ class block_my_certificates_edit_form extends block_edit_form {
      * @return void
      */
     protected function specific_definition($mform) {
+        // Block title.
+        $mform->addElement(
+            'text',
+            'config_title',
+            get_string('blocktitle', 'block_my_certificates')
+        );
+        $mform->setDefault('config_title', get_string('pluginname', 'block_my_certificates'));
+        $mform->setType('config_title', PARAM_TEXT);
+
         // Text field.
         $editoroptions = [
                 'subdirs' => 0,
@@ -57,8 +66,12 @@ class block_my_certificates_edit_form extends block_edit_form {
         );
 
         $mform->addHelpButton('config_text', 'no_certificates', 'block_my_certificates');
-        $mform->setType('config_text', PARAM_CLEANHTML);
+        $mform->setType('config_text', PARAM_RAW);
         $mform->addRule('config_text', null, 'required', null, 'client');
+        $mform->setDefault('config_text', [
+            'text' => get_string('default_no_certificates_text', 'block_my_certificates'),
+            'format' => FORMAT_HTML,
+        ]);
 
         $mform->addElement(
             'select',
@@ -71,5 +84,73 @@ class block_my_certificates_edit_form extends block_edit_form {
         );
         $mform->addHelpButton('config_showallcertificates', 'showallcertificates', 'block_my_certificates');
         $mform->setDefault('config_showallcertificates', 1);
+
+        $mform->addElement(
+            'header',
+            'config_displayoptions_main',
+            get_string('displayoptions_main', 'block_my_certificates')
+        );
+
+        $mform->addElement(
+            'advcheckbox',
+            'config_showcertificatepreview',
+            get_string('showcertificatepreview', 'block_my_certificates')
+        );
+        $mform->addHelpButton('config_showcertificatepreview', 'showcertificatepreview', 'block_my_certificates');
+        $mform->setDefault('config_showcertificatepreview', 1);
+
+        $mform->addElement(
+            'advcheckbox',
+            'config_showcertificatename',
+            get_string('showcertificatename', 'block_my_certificates')
+        );
+        $mform->addHelpButton('config_showcertificatename', 'showcertificatename', 'block_my_certificates');
+        $mform->setDefault('config_showcertificatename', 1);
+
+        $mform->addElement(
+            'advcheckbox',
+            'config_showcoursename',
+            get_string('showcoursename', 'block_my_certificates')
+        );
+        $mform->addHelpButton('config_showcoursename', 'showcoursename', 'block_my_certificates');
+        $mform->setDefault('config_showcoursename', 1);
+
+        $mform->addElement(
+            'advcheckbox',
+            'config_showcertificatedate',
+            get_string('showcertificatedate', 'block_my_certificates')
+        );
+        $mform->addHelpButton('config_showcertificatedate', 'showcertificatedate', 'block_my_certificates');
+        $mform->setDefault('config_showcertificatedate', 1);
+
+        $mform->addElement(
+            'advcheckbox',
+            'config_showdownloadbutton',
+            get_string('showdownloadbutton', 'block_my_certificates')
+        );
+        $mform->addHelpButton('config_showdownloadbutton', 'showdownloadbutton', 'block_my_certificates');
+        $mform->setDefault('config_showdownloadbutton', 1);
+
+        $mform->addElement(
+            'header',
+            'config_displayoptions_all',
+            get_string('displayoptions_all', 'block_my_certificates')
+        );
+
+        $mform->addElement(
+            'advcheckbox',
+            'config_showalllistcertificatename',
+            get_string('showalllistcertificatename', 'block_my_certificates')
+        );
+        $mform->addHelpButton('config_showalllistcertificatename', 'showalllistcertificatename', 'block_my_certificates');
+        $mform->setDefault('config_showalllistcertificatename', 1);
+
+        $mform->addElement(
+            'advcheckbox',
+            'config_showalllistcoursename',
+            get_string('showalllistcoursename', 'block_my_certificates')
+        );
+        $mform->addHelpButton('config_showalllistcoursename', 'showalllistcoursename', 'block_my_certificates');
+        $mform->setDefault('config_showalllistcoursename', 1);
     }
 }

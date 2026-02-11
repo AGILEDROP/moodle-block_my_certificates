@@ -49,37 +49,57 @@
     {{#usercertificates}}
         <div class="certificate-card-wrapper">
             <div class="certificate-card">
-                {{!-- Certificate preview --}}
-                <div class="certificate-preview">
-                    <canvas class="pdf-canvas" data-src="{{previewurl}}" aria-label="{{certificate}}"></canvas>
-                </div>
+                {{#showcertificatepreview}}
+                    {{!-- Certificate preview --}}
+                    <div class="certificate-preview">
+                        <canvas class="pdf-canvas" data-src="{{previewurl}}" aria-label="{{certificate}}"></canvas>
+                    </div>
+                {{/showcertificatepreview}}
 
                 <div class="certificate-body">
                     <div class="certificate-content">
-                        {{!-- Certificate name --}}
-                        <h3 class="certificate-title">
-                            {{certificate}}
-                        </h3>
+                        {{#showcertificatename}}
+                            {{!-- Certificate name --}}
+                            <h3 class="certificate-title">
+                                {{certificate}}
+                            </h3>
+                        {{/showcertificatename}}
 
-                        {{!-- Certificate details --}}
-                        <div class="certificate-details">
-                            <div class="certificate-info-item">
-                                <span class="certificate-label">{{#str}} course, block_my_certificates {{/str}}</span>
-                                <span class="certificate-value">{{course}}</span>
+                        {{#showcoursename}}
+                            {{!-- Certificate details --}}
+                            <div class="certificate-details">
+                                <div class="certificate-info-item">
+                                    <span class="certificate-label">{{#str}} course, block_my_certificates {{/str}}</span>
+                                    <span class="certificate-value">{{course}}</span>
+                                </div>
+                                {{#showcertificatedate}}
+                                    <div class="certificate-info-item">
+                                        <span class="certificate-label">{{#str}} date, block_my_certificates {{/str}}</span>
+                                        <span class="certificate-value">{{date}}</span>
+                                    </div>
+                                {{/showcertificatedate}}
                             </div>
-                            <div class="certificate-info-item">
-                                <span class="certificate-label">{{#str}} date, block_my_certificates {{/str}}</span>
-                                <span class="certificate-value">{{date}}</span>
-                            </div>
-                        </div>
+                        {{/showcoursename}}
+                        {{^showcoursename}}
+                            {{#showcertificatedate}}
+                                <div class="certificate-details">
+                                    <div class="certificate-info-item">
+                                        <span class="certificate-label">{{#str}} date, block_my_certificates {{/str}}</span>
+                                        <span class="certificate-value">{{date}}</span>
+                                    </div>
+                                </div>
+                            {{/showcertificatedate}}
+                        {{/showcoursename}}
 
-                        {{!-- Certificate download link --}}
-                        <div class="certificate-actions">
-                            <a href="{{previewurl}}" target="_blank" class="certificate-download-link">
-                                {{#pix}}t/download, core{{/pix}}
-                                <span class="certificate-link-label">{{#str}} download, block_my_certificates {{/str}}</span>
-                            </a>
-                        </div>
+                        {{#showdownloadbutton}}
+                            {{!-- Certificate download link --}}
+                            <div class="certificate-actions">
+                                <a href="{{previewurl}}" target="_blank" class="certificate-download-link">
+                                    {{#pix}}t/download, core{{/pix}}
+                                    <span class="certificate-link-label">{{#str}} download, block_my_certificates {{/str}}</span>
+                                </a>
+                            </div>
+                        {{/showdownloadbutton}}
                     </div>
                 </div>
             </div>
@@ -101,7 +121,21 @@
                 {{#allcertificates}}
                     <li class="all-certificates-item">
                         <a href="{{viewurl}}" class="all-certificates-link">
-                            <span class="all-certificates-name">{{name}}</span>
+                            <span class="all-certificates-text">
+                                {{#showalllistcertificatename}}
+                                    <span class="all-certificates-name">{{name}}</span>
+                                {{/showalllistcertificatename}}
+                                {{#showalllistcoursename}}
+                                    {{#showalllistcertificatename}}
+                                        <span class="all-certificates-course">{{course}}</span>
+                                    {{/showalllistcertificatename}}
+                                    {{^showalllistcertificatename}}
+                                        <span class="all-certificates-course all-certificates-course-standalone">
+                                            {{course}}
+                                        </span>
+                                    {{/showalllistcertificatename}}
+                                {{/showalllistcoursename}}
+                            </span>
                             <span class="all-certificates-chevron" aria-hidden="true"></span>
                         </a>
                     </li>

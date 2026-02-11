@@ -212,10 +212,10 @@
 
 .block_my_certificates .all-certificates-link {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
     border-radius: 0.5rem;
     background: #f8fafc;
     color: #1f2937;
@@ -236,12 +236,44 @@
 }
 
 .block_my_certificates .all-certificates-name {
-    font-weight: 600;
+    display: block;
+    margin: 0;
+    font-weight: 700;
     font-size: 0.95rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    color: inherit;
+}
+
+.block_my_certificates .all-certificates-text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    gap: 0.2rem;
+}
+
+.block_my_certificates .all-certificates-course {
+    display: block;
+    margin: 0;
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.35;
+    color: #64748b;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.block_my_certificates .all-certificates-course-standalone {
+    font-size: 0.95rem;
+    font-weight: 600;
     color: inherit;
 }
 
 .block_my_certificates .all-certificates-chevron {
+    align-self: center;
+    flex-shrink: 0;
     color: #6366f1;
     font-size: 1.1rem;
 }
@@ -282,6 +314,10 @@ body.theme-dark .block_my_certificates .all-certificates-link {
 body.theme-dark .block_my_certificates .all-certificates-link:hover {
     background: #1f2937;
     border-color: #4b5563;
+}
+
+body.theme-dark .block_my_certificates .all-certificates-course {
+    color: #9ca3af;
 }
 
 body.theme-dark .block_my_certificates .all-certificates-chevron {
