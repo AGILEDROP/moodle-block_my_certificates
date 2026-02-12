@@ -367,7 +367,7 @@ class block_my_certificates extends block_base {
     /**
      * Build inline CSS variables for color customization.
      *
-     * @param array<string, string> $colors Color settings.
+     * @param array $colors Color settings keyed by internal color names.
      * @return string
      */
     protected function build_color_style(array $colors): string {
