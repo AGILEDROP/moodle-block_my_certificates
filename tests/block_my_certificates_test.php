@@ -205,6 +205,53 @@ final class block_my_certificates_test extends \advanced_testcase {
     }
 
     /**
+     * Ensure certificate name uses the custom certificate template name when available.
+     *
+     * @covers \block_my_certificates\local\certificate_data_provider::get_issued_for_user
+     * @covers \block_my_certificates\local\certificate_data_provider::get_all_certificates
+     */
+    public function test_provider_uses_template_name_for_certificate_name(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+
+        $this->assertTrue(
+            $this->has_customcert_generator(),
+            'mod_customcert generator is required for this test. Ensure CI installs mdjnelson/moodle-mod_customcert.'
+        );
+
+        $generator = $this->getDataGenerator();
+        $user = $generator->create_user();
+        $course = $generator->create_course();
+
+        $customcert = $generator->create_module('customcert', [
+            'course' => $course->id,
+            'name' => 'Activity name',
+        ]);
+
+        $customcertrecord = $DB->get_record('customcert', ['id' => $customcert->id], '*', MUST_EXIST);
+        $DB->set_field('customcert_templates', 'name', 'Certificate name', ['id' => $customcertrecord->templateid]);
+
+        $DB->insert_record('customcert_issues', (object) [
+            'customcertid' => $customcert->id,
+            'userid' => $user->id,
+            'code' => 'CERTCODE',
+            'timecreated' => time(),
+        ]);
+
+        $provider = new \block_my_certificates\local\certificate_data_provider();
+        $issued = $provider->get_issued_for_user($user->id);
+        $allcertificates = $provider->get_all_certificates();
+
+        $this->assertNotEmpty($issued);
+        $this->assertSame('Certificate name', $issued[0]['certificate']);
+
+        $allcertificatesbyid = array_column($allcertificates, null, 'id');
+        $this->assertArrayHasKey($customcert->id, $allcertificatesbyid);
+        $this->assertSame('Certificate name', $allcertificatesbyid[$customcert->id]['name']);
+    }
+
+    /**
      * Ensure all certificates include course and view URLs when module exists.
      *
      * @covers \block_my_certificates\local\certificate_data_provider::get_all_certificates
@@ -326,5 +373,40 @@ final class block_my_certificates_test extends \advanced_testcase {
         $this->assertNotEmpty($content);
         $this->assertSame(1, $provider->issuedforusercalls);
         $this->assertSame(0, $provider->allcertificatescalls);
+    }
+
+    /**
+     * Ensure the default no-certificates message is used when instance text is empty.
+     *
+     * @covers \block_my_certificates::get_content
+     */
+    public function test_default_no_certificates_text_is_used_when_empty(): void {
+        $this->resetAfterTest(true);
+
+        $generator = $this->getDataGenerator();
+        $user = $generator->create_user();
+        $this->setUser($user);
+
+        $page = new \moodle_page();
+        $page->set_url(new \moodle_url('/'));
+        $page->set_context(\context_system::instance());
+        $page->set_pagelayout('standard');
+
+        $provider = $this->create_provider_stub([], []);
+        $block = $this->create_block_with_provider($provider);
+        $block->page = $page;
+        $block->context = \context_system::instance();
+        $block->config = (object) [
+            'showallcertificates' => 0,
+            'text' => [
+                'text' => '',
+                'format' => FORMAT_HTML,
+            ],
+        ];
+
+        $content = $block->get_content();
+
+        $this->assertNotEmpty($content);
+        $this->assertStringContainsString('You do not have any certificates yet.', $content->text);
     }
 }

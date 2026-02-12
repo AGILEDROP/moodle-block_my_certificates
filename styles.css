@@ -9,6 +9,18 @@
 
 /* Main grid container */
 .block_my_certificates .block-my-certificates-grid {
+    --mc-card-gradient-direction: 135deg;
+    --mc-card-gradient-start: #667eea;
+    --mc-card-gradient-end: #764ba2;
+    --mc-all-card-gradient-direction: 135deg;
+    --mc-all-card-gradient-start: #ffffff;
+    --mc-all-card-gradient-end: #eef2ff;
+    --mc-all-card-border: #e6e8ef;
+    --mc-all-row-bg: #f8fafc;
+    --mc-all-row-hover-bg: #eef2ff;
+    --mc-all-row-hover-border: #c7d2fe;
+    --mc-all-course-color: #64748b;
+    --mc-accent-color: #6366f1;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1.5rem;
@@ -33,7 +45,11 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(
+        var(--mc-card-gradient-direction),
+        var(--mc-card-gradient-start) 0%,
+        var(--mc-card-gradient-end) 100%
+    );
     border-radius: 0.5rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
     overflow: hidden;
@@ -178,8 +194,12 @@
     flex-direction: column;
     gap: 1rem;
     padding: 1.5rem;
-    background: #ffffff;
-    border: 1px solid #e6e8ef;
+    background: linear-gradient(
+        var(--mc-all-card-gradient-direction),
+        var(--mc-all-card-gradient-start) 0%,
+        var(--mc-all-card-gradient-end) 100%
+    );
+    border: 1px solid var(--mc-all-card-border);
     border-radius: 0.75rem;
     box-shadow: 0 6px 20px rgba(20, 32, 70, 0.08);
 }
@@ -212,12 +232,12 @@
 
 .block_my_certificates .all-certificates-link {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
     border-radius: 0.5rem;
-    background: #f8fafc;
+    background: var(--mc-all-row-bg);
     color: #1f2937;
     text-decoration: none;
     border: 1px solid transparent;
@@ -225,8 +245,8 @@
 }
 
 .block_my_certificates .all-certificates-link:hover {
-    background: #eef2ff;
-    border-color: #c7d2fe;
+    background: var(--mc-all-row-hover-bg);
+    border-color: var(--mc-all-row-hover-border);
     transform: translateY(-1px);
 }
 
@@ -236,13 +256,45 @@
 }
 
 .block_my_certificates .all-certificates-name {
-    font-weight: 600;
+    display: block;
+    margin: 0;
+    font-weight: 700;
     font-size: 0.95rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    color: inherit;
+}
+
+.block_my_certificates .all-certificates-text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    gap: 0.2rem;
+}
+
+.block_my_certificates .all-certificates-course {
+    display: block;
+    margin: 0;
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--mc-all-course-color);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.block_my_certificates .all-certificates-course-standalone {
+    font-size: 0.95rem;
+    font-weight: 600;
     color: inherit;
 }
 
 .block_my_certificates .all-certificates-chevron {
-    color: #6366f1;
+    align-self: center;
+    flex-shrink: 0;
+    color: var(--mc-accent-color);
     font-size: 1.1rem;
 }
 
@@ -264,9 +316,19 @@ body.theme-dark .block_my_certificates .no-certificates-message p {
     color: #cbd5e0;
 }
 
+body.theme-dark .block_my_certificates .block-my-certificates-grid {
+    --mc-all-card-gradient-direction: 135deg;
+    --mc-all-card-gradient-start: #1f2937;
+    --mc-all-card-gradient-end: #1f2937;
+    --mc-all-card-border: #374151;
+    --mc-all-row-bg: #111827;
+    --mc-all-row-hover-bg: #1f2937;
+    --mc-all-row-hover-border: #4b5563;
+    --mc-all-course-color: #9ca3af;
+    --mc-accent-color: #a5b4fc;
+}
+
 body.theme-dark .block_my_certificates .all-certificates-card {
-    background: #1f2937;
-    border-color: #374151;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
 }
 
@@ -275,17 +337,7 @@ body.theme-dark .block_my_certificates .all-certificates-title {
 }
 
 body.theme-dark .block_my_certificates .all-certificates-link {
-    background: #111827;
     color: #e5e7eb;
-}
-
-body.theme-dark .block_my_certificates .all-certificates-link:hover {
-    background: #1f2937;
-    border-color: #4b5563;
-}
-
-body.theme-dark .block_my_certificates .all-certificates-chevron {
-    color: #a5b4fc;
 }
 
 /* Print styles */
