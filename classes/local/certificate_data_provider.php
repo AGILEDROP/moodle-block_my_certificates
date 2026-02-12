@@ -38,12 +38,14 @@ class certificate_data_provider {
                        ci.timecreated,
                        ci.code,
                        cc.id AS customcertid,
-                       cc.name AS certname,
+                       cc.name AS activityname,
+                       ct.name AS certificatename,
                        c.id AS courseid,
                        c.fullname AS coursename,
                        cm.id AS cmid
                 FROM {customcert_issues} ci
                 INNER JOIN {customcert} cc ON cc.id = ci.customcertid
+                LEFT JOIN {customcert_templates} ct ON ct.id = cc.templateid
                 INNER JOIN {course} c ON c.id = cc.course
                 INNER JOIN {course_modules} cm ON cm.instance = cc.id AND cm.course = cc.course
                 INNER JOIN {modules} m ON m.id = cm.module AND m.name = 'customcert'
@@ -55,9 +57,10 @@ class certificate_data_provider {
         $out = [];
         foreach ($records as $r) {
             $previewurl = new \moodle_url('/mod/customcert/view.php', ['id' => $r->cmid, 'downloadown' => 1]);
+            $certificatename = trim((string)($r->certificatename ?? ''));
 
             $out[] = [
-                'certificate' => $r->certname,
+                'certificate' => $certificatename !== '' ? $certificatename : $r->activityname,
                 'course' => $r->coursename,
                 'courseid' => $r->courseid,
                 'customcertid' => $r->customcertid,
@@ -78,12 +81,22 @@ class certificate_data_provider {
     public function get_all_certificates(): array {
         global $DB;
 
-        $certificates = $DB->get_records('customcert', null, '', 'id, name, course');
+        $sql = "SELECT cc.id,
+                       cc.course,
+                       cc.name AS activityname,
+                       ct.name AS certificatename,
+                       c.fullname AS coursename
+                  FROM {customcert} cc
+                  INNER JOIN {course} c ON c.id = cc.course
+             LEFT JOIN {customcert_templates} ct ON ct.id = cc.templateid
+              ORDER BY c.fullname, cc.name";
+        $certificates = $DB->get_records_sql($sql);
 
         $certificatesdata = [];
         foreach ($certificates as $certificate) {
             $courseurl = (new \moodle_url('/course/view.php', ['id' => $certificate->course]))->out(false);
             $viewurl = '';
+            $certificatename = trim((string)($certificate->certificatename ?? ''));
 
             if ($cm = get_coursemodule_from_instance('customcert', $certificate->id, $certificate->course, false, IGNORE_MISSING)) {
                 $viewurl = (new \moodle_url('/mod/customcert/view.php', ['id' => $cm->id]))->out(false);
@@ -91,7 +104,8 @@ class certificate_data_provider {
 
             $certificatesdata[] = [
                 'id' => $certificate->id,
-                'name' => $certificate->name,
+                'name' => $certificatename !== '' ? $certificatename : $certificate->activityname,
+                'course' => $certificate->coursename,
                 'courseurl' => $courseurl,
                 'viewurl' => $viewurl,
             ];
