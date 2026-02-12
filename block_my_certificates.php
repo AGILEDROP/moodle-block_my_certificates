@@ -151,8 +151,6 @@ class block_my_certificates extends block_base {
     /**
      * Get no-certificates editor data in a normalized format.
      *
-     * Supports legacy configurations where text was stored as a plain string.
-     *
      * @return array{text: string, format: int}
      */
     protected function get_no_certificates_text(): array {
@@ -161,34 +159,18 @@ class block_my_certificates extends block_base {
             'format' => FORMAT_HTML,
         ];
 
-        if (empty($this->config) || !property_exists($this->config, 'text')) {
+        if (empty($this->config) || !property_exists($this->config, 'text') || !is_array($this->config->text)) {
             return $default;
         }
 
-        $rawtext = $this->config->text;
-        $text = '';
-        $format = $default['format'];
-
-        if (is_array($rawtext)) {
-            $text = (string)($rawtext['text'] ?? '');
-            $format = (int)($rawtext['format'] ?? $format);
-        } else if (is_object($rawtext)) {
-            $text = (string)($rawtext->text ?? '');
-            $format = (int)($rawtext->format ?? $format);
-        } else {
-            $text = (string)$rawtext;
-            if (property_exists($this->config, 'format')) {
-                $format = (int)$this->config->format;
-            }
-        }
-
+        $text = trim((string)($this->config->text['text'] ?? ''));
         if (trim($text) === '') {
             return $default;
         }
 
         return [
             'text' => $text,
-            'format' => $format,
+            'format' => (int)($this->config->text['format'] ?? $default['format']),
         ];
     }
 
