@@ -23,6 +23,8 @@ Ideal for dashboards, course pages, and the site home page, it highlights comple
 - PHP 8.1 or higher
 - [Custom Certificate module](https://moodle.org/plugins/mod_customcert) (mod_customcert) version 2024042212 or higher
 
+Previews and downloads are served by the block's own `preview.php`, which works with both the legacy and the 5.2+ (service layer) Custom Certificate APIs and only returns certificates already issued to the current user.
+
 ## Installation
 
 ### Installing via uploaded ZIP file

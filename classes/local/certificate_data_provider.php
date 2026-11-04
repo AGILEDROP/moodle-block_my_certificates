@@ -56,7 +56,7 @@ class certificate_data_provider {
 
         $out = [];
         foreach ($records as $r) {
-            $previewurl = new \moodle_url('/mod/customcert/view.php', ['id' => $r->cmid, 'downloadown' => 1]);
+            $previewurl = new \moodle_url('/blocks/my_certificates/preview.php', ['id' => $r->cmid]);
             $certificatename = trim((string)($r->certificatename ?? ''));
 
             $out[] = [
