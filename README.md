@@ -19,9 +19,11 @@ Ideal for dashboards, course pages, and the site home page, it highlights comple
 
 ## Requirements
 
-- Moodle 4.5 or higher
-- PHP 8.1 or higher
+- Moodle 4.5 to 5.3 (standard Boost theme)
+- PHP supported by your Moodle version (8.1 or higher for Moodle 4.5)
 - [Custom Certificate module](https://moodle.org/plugins/mod_customcert) (mod_customcert) version 2024042212 or higher
+
+Dark mode follows the Boost colour mode (`data-bs-theme="dark"`, available from Moodle 5.3 when enabled in the Boost experimental settings). Non-default colours chosen in the block settings take priority over the theme defaults, with contrasting text selected for custom backgrounds in the all-certificates section. Default colours, including a monotone fill, follow the theme.
 
 Previews and downloads are served by the block's own `preview.php`, which works with both the legacy and the 5.2+ (service layer) Custom Certificate APIs and only returns certificates already issued to the current user.
 
@@ -96,6 +98,7 @@ In the block configuration you can:
 
 - The block does not create new database tables.
 - All certificate data is read from Custom Certificate tables.
+- The all-certificates list only includes courses and activities accessible to the current user.
 - PDF rendering is client-side using PDF.js.
 - If UI text or styling changes are not visible immediately, purge Moodle caches.
 
