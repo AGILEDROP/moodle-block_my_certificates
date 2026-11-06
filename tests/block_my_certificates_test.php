@@ -578,7 +578,8 @@ final class block_my_certificates_test extends \advanced_testcase {
         require_once($CFG->dirroot . '/blocks/edit_form.php');
         $block = \block_instance('my_certificates');
         require_once($CFG->dirroot . '/blocks/my_certificates/edit_form.php');
-        $page = new \moodle_page();
+        // Share the global page with TinyMCE plugins when the editor is rendered.
+        $page = $GLOBALS['PAGE'];
         $page->set_context(\context_system::instance());
         $page->set_url('/my/index.php');
         $page->set_pagelayout('mydashboard');
