@@ -260,12 +260,13 @@ class block_my_certificates extends block_base {
     }
 
     /**
-     * Returns the default hex colors, matching the defaults in styles.css.
+     * Default palette for a colour mode, shared with the instance settings form.
      *
+     * @param string $mode Light or dark.
      * @return array<string, string>
      */
-    protected function get_default_colors(): array {
-        return [
+    public static function get_palette_defaults(string $mode = 'light'): array {
+        $colors = [
             'cardgradientstart' => '#667eea',
             'cardgradientend' => '#764ba2',
             'allcertscardbg' => '#ffffff',
@@ -274,6 +275,56 @@ class block_my_certificates extends block_base {
             'allcertsitemhoverbg' => '#eef2ff',
             'accentcolor' => '#6366f1',
         ];
+        if ($mode === 'dark') {
+            $colors = [
+                'cardgradientstart' => '#37306b',
+                'cardgradientend' => '#202442',
+                'allcertscardbg' => '#2b3035',
+                'allcertsgradientend' => '#2b3035',
+                'allcertsitembg' => '#212529',
+                'allcertsitemhoverbg' => '#343a40',
+                'accentcolor' => '#a5b4fc',
+            ];
+        }
+        return $colors + [
+            'cardfillmode' => 'gradient',
+            'cardgradientdirection' => '135deg',
+            'allcertsfillmode' => 'gradient',
+            'allcertsgradientdirection' => '135deg',
+        ];
+    }
+
+    /**
+     * Whether an instance uses automatic colours. Preserve customised legacy instances.
+     *
+     * @param stdClass|null $config Instance settings.
+     * @return bool
+     */
+    public static function uses_default_colors(?stdClass $config): bool {
+        if (isset($config->usedefaultcolors)) {
+            return !empty($config->usedefaultcolors);
+        }
+        foreach (self::get_palette_defaults() as $setting => $default) {
+            if (isset($config->{$setting})) {
+                $value = strtolower(trim((string)$config->{$setting}));
+                if ($value !== $default) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns the default hex colors, matching the defaults in styles.css.
+     *
+     * @return array<string, string>
+     */
+    protected function get_default_colors(): array {
+        $defaults = self::get_palette_defaults();
+        unset($defaults['cardfillmode'], $defaults['cardgradientdirection']);
+        unset($defaults['allcertsfillmode'], $defaults['allcertsgradientdirection']);
+        return $defaults;
     }
 
     /**
@@ -376,12 +427,21 @@ class block_my_certificates extends block_base {
      * @return string
      */
     protected function build_color_style(array $colors): string {
+        if (isset($this->config->usedefaultcolors)) {
+            if (self::uses_default_colors($this->config)) {
+                return '';
+            }
+            return $this->build_palette_style('light') . $this->build_palette_style('dark');
+        }
+
         $defaults = $this->get_default_colors();
         $parts = [];
-        foreach ([
+        foreach (
+            [
             ['cardgradientstart', 'cardgradientend', 'cardfillmode', '--mc-card-gradient'],
             ['allcertscardbg', 'allcertsgradientend', 'allcertsfillmode', '--mc-all-card-gradient'],
-        ] as [$start, $end, $fillmode, $prefix]) {
+            ] as [$start, $end, $fillmode, $prefix]
+        ) {
             $monotone = $colors[$fillmode] === 'monotone';
             $custom = $colors[$start] !== $defaults[$start] ||
                 (!$monotone && $colors[$end] !== $defaults[$end]);
@@ -398,10 +458,12 @@ class block_my_certificates extends block_base {
             }
         }
 
-        foreach ([
+        foreach (
+            [
             'allcertsitembg' => '--mc-all-row',
             'allcertsitemhoverbg' => '--mc-all-row-hover',
-        ] as $setting => $prefix) {
+            ] as $setting => $prefix
+        ) {
             if ($colors[$setting] !== $defaults[$setting]) {
                 $foreground = $this->get_contrasting_text_color([$colors[$setting]]);
                 $parts[] = $prefix . '-bg: ' . $colors[$setting];
@@ -420,6 +482,57 @@ class block_my_certificates extends block_base {
         }
 
         return $parts ? implode('; ', $parts) . ';' : '';
+    }
+
+    /**
+     * Build mode-specific CSS custom properties, selected by the stylesheet on a mode change.
+     *
+     * @param string $mode Light or dark.
+     * @return string Inline custom properties.
+     */
+    protected function build_palette_style(string $mode): string {
+        $colors = [];
+        foreach (self::get_palette_defaults($mode) as $setting => $default) {
+            $key = ($mode === 'dark' ? 'dark_' : '') . $setting;
+            $value = (string)($this->config->{$key} ?? $default);
+            if (str_ends_with($setting, 'fillmode')) {
+                $colors[$setting] = $this->normalize_card_fill_mode($value);
+            } else if (str_ends_with($setting, 'direction')) {
+                $colors[$setting] = $this->normalize_gradient_direction($value);
+            } else {
+                $colors[$setting] = $this->normalize_hex_color($value, $default);
+            }
+        }
+        $cardend = $colors['cardfillmode'] === 'monotone' ? $colors['cardgradientstart'] : $colors['cardgradientend'];
+        $allend = $colors['allcertsfillmode'] === 'monotone' ? $colors['allcertscardbg'] : $colors['allcertsgradientend'];
+        $cardtext = $this->get_contrasting_text_color([$colors['cardgradientstart'], $cardend]);
+        $rowtext = $this->get_contrasting_text_color([$colors['allcertsitembg']]);
+        $hovertext = $this->get_contrasting_text_color([$colors['allcertsitemhoverbg']]);
+        $vars = [
+            'card-gradient-start' => $colors['cardgradientstart'],
+            'card-gradient-end' => $cardend,
+            'card-gradient-direction' => $colors['cardgradientdirection'],
+            'card-color' => $cardtext,
+            'card-muted-color' => $cardtext,
+            'card-divider-color' => $cardtext . '33',
+            'card-icon-filter' => $cardtext === '#ffffff' ? 'brightness(0) invert(1)' : 'brightness(0)',
+            'all-card-gradient-start' => $colors['allcertscardbg'],
+            'all-card-gradient-end' => $allend,
+            'all-card-gradient-direction' => $colors['allcertsgradientdirection'],
+            'all-card-color' => $this->get_contrasting_text_color([$colors['allcertscardbg'], $allend]),
+            'all-row-bg' => $colors['allcertsitembg'],
+            'all-row-hover-bg' => $colors['allcertsitemhoverbg'],
+            'all-row-color' => $rowtext,
+            'all-row-course-color' => $rowtext,
+            'all-row-hover-color' => $hovertext,
+            'all-row-hover-course-color' => $hovertext,
+            'accent-color' => $colors['accentcolor'],
+        ];
+        $parts = [];
+        foreach ($vars as $name => $value) {
+            $parts[] = '--mc-' . $mode . '-' . $name . ': ' . $value;
+        }
+        return implode('; ', $parts) . ';';
     }
 
     /**

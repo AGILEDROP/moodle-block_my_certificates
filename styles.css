@@ -10,23 +10,27 @@
 /* Main grid container */
 .block_my_certificates .block-my-certificates-grid {
     --mc-card-min-width: min(100%, 280px);
-    --mc-card-gradient-direction: 135deg;
-    --mc-card-gradient-start: #667eea;
-    --mc-card-gradient-end: #764ba2;
-    --mc-all-card-gradient-direction: 135deg;
-    --mc-all-card-gradient-start: #fff;
-    --mc-all-card-gradient-end: #eef2ff;
+    --mc-card-gradient-direction: var(--mc-light-card-gradient-direction, 135deg);
+    --mc-card-gradient-start: var(--mc-light-card-gradient-start, #667eea);
+    --mc-card-gradient-end: var(--mc-light-card-gradient-end, #764ba2);
+    --mc-all-card-gradient-direction: var(--mc-light-all-card-gradient-direction, 135deg);
+    --mc-all-card-gradient-start: var(--mc-light-all-card-gradient-start, #fff);
+    --mc-all-card-gradient-end: var(--mc-light-all-card-gradient-end, #eef2ff);
     --mc-all-card-border: #e6e8ef;
-    --mc-all-row-bg: #f8fafc;
-    --mc-all-row-hover-bg: #eef2ff;
+    --mc-all-row-bg: var(--mc-light-all-row-bg, #f8fafc);
+    --mc-all-row-hover-bg: var(--mc-light-all-row-hover-bg, #eef2ff);
     --mc-all-row-hover-border: var(--mc-accent-color);
     --mc-all-course-color: #64748b;
-    --mc-all-card-color: #1f2937;
-    --mc-all-row-color: #1f2937;
-    --mc-all-row-course-color: var(--mc-all-course-color);
-    --mc-all-row-hover-color: #1f2937;
-    --mc-all-row-hover-course-color: var(--mc-all-course-color);
-    --mc-accent-color: #6366f1;
+    --mc-all-card-color: var(--mc-light-all-card-color, #1f2937);
+    --mc-all-row-color: var(--mc-light-all-row-color, #1f2937);
+    --mc-all-row-course-color: var(--mc-light-all-row-course-color, var(--mc-all-course-color));
+    --mc-all-row-hover-color: var(--mc-light-all-row-hover-color, #1f2937);
+    --mc-all-row-hover-course-color: var(--mc-light-all-row-hover-course-color, var(--mc-all-course-color));
+    --mc-accent-color: var(--mc-light-accent-color, #6366f1);
+    --mc-card-color: var(--mc-light-card-color, #fff);
+    --mc-card-muted-color: var(--mc-light-card-muted-color, rgba(255, 255, 255, 0.8));
+    --mc-card-divider-color: var(--mc-light-card-divider-color, rgba(255, 255, 255, 0.2));
+    --mc-card-icon-filter: var(--mc-light-card-icon-filter, brightness(0) invert(1));
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(var(--mc-card-min-width), 1fr));
     gap: 1.5rem;
@@ -105,7 +109,7 @@
 
 /* Certificate title */
 .block_my_certificates .certificate-title {
-    color: #fff;
+    color: var(--mc-card-color);
     font-size: 1.125rem;
     font-weight: 700;
     margin: 0 0 1rem 0;
@@ -129,21 +133,21 @@
 }
 
 .block_my_certificates .certificate-label {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--mc-card-muted-color);
     font-size: 0.875rem;
     font-weight: 500;
     margin-bottom: 0.25rem;
 }
 
 .block_my_certificates .certificate-value {
-    color: #fff;
+    color: var(--mc-card-color);
     font-size: 1rem;
     font-weight: 600;
 }
 
 /* Certificate actions section */
 .block_my_certificates .certificate-actions {
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: 1px solid var(--mc-card-divider-color);
     padding-top: 1rem;
     margin-top: auto;
 }
@@ -152,14 +156,14 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: #fff;
+    color: var(--mc-card-color);
     text-decoration: none;
     font-weight: 600;
     transition: opacity 0.2s ease;
 }
 
 .block_my_certificates .certificate-download-link:hover {
-    color: #fff;
+    color: var(--mc-card-color);
     text-decoration: none;
     opacity: 0.8;
 }
@@ -173,7 +177,7 @@
 .block_my_certificates .certificate-download-link img {
     width: 16px;
     height: 16px;
-    filter: brightness(0) invert(1);
+    filter: var(--mc-card-icon-filter);
 }
 
 .block_my_certificates .certificate-link-label {
@@ -320,8 +324,8 @@
 /*
  * Dark mode support.
  * Boost 5.3+ sets data-bs-theme="dark" on the html element when its colour mode is dark. Colours follow the
- * Bootstrap variables where available, with the previous values as fallbacks. Colours chosen by an admin are
- * written inline by the block and are therefore not affected by these defaults.
+ * Bootstrap variables where available. Per-instance light/dark palettes are stored as separate custom
+ * properties; selecting the active palette here also supports live colour-mode changes.
  */
 [data-bs-theme="dark"] .block_my_certificates .certificate-preview {
     background-color: var(--bs-secondary-bg, #2d3748);
@@ -337,16 +341,26 @@
 }
 
 [data-bs-theme="dark"] .block_my_certificates .block-my-certificates-grid {
-    --mc-all-card-gradient-start: var(--bs-tertiary-bg, #1f2937);
-    --mc-all-card-gradient-end: var(--bs-tertiary-bg, #1f2937);
+    --mc-card-gradient-start: var(--mc-dark-card-gradient-start, #37306b);
+    --mc-card-gradient-end: var(--mc-dark-card-gradient-end, #202442);
+    --mc-card-gradient-direction: var(--mc-dark-card-gradient-direction, 135deg);
+    --mc-card-color: var(--mc-dark-card-color, #fff);
+    --mc-card-muted-color: var(--mc-dark-card-muted-color, rgba(255, 255, 255, 0.8));
+    --mc-card-divider-color: var(--mc-dark-card-divider-color, rgba(255, 255, 255, 0.2));
+    --mc-card-icon-filter: var(--mc-dark-card-icon-filter, brightness(0) invert(1));
+    --mc-all-card-gradient-start: var(--mc-dark-all-card-gradient-start, var(--bs-tertiary-bg, #2b3035));
+    --mc-all-card-gradient-end: var(--mc-dark-all-card-gradient-end, var(--bs-tertiary-bg, #2b3035));
+    --mc-all-card-gradient-direction: var(--mc-dark-all-card-gradient-direction, 135deg);
+    --mc-all-card-color: var(--mc-dark-all-card-color, var(--bs-body-color, #f3f4f6));
+    --mc-all-row-bg: var(--mc-dark-all-row-bg, var(--bs-body-bg, #212529));
+    --mc-all-row-hover-bg: var(--mc-dark-all-row-hover-bg, var(--bs-secondary-bg, #343a40));
+    --mc-all-row-color: var(--mc-dark-all-row-color, var(--bs-body-color, #f3f4f6));
+    --mc-all-row-course-color: var(--mc-dark-all-row-course-color, var(--bs-secondary-color, #9ca3af));
+    --mc-all-row-hover-color: var(--mc-dark-all-row-hover-color, var(--bs-body-color, #f3f4f6));
+    --mc-all-row-hover-course-color: var(--mc-dark-all-row-hover-course-color, var(--bs-secondary-color, #9ca3af));
+    --mc-accent-color: var(--mc-dark-accent-color, #a5b4fc);
     --mc-all-card-border: var(--bs-border-color, #374151);
-    --mc-all-row-bg: var(--bs-body-bg, #111827);
-    --mc-all-row-hover-bg: var(--bs-secondary-bg, #1f2937);
     --mc-all-course-color: var(--bs-secondary-color, #9ca3af);
-    --mc-all-card-color: var(--bs-body-color, #f3f4f6);
-    --mc-all-row-color: var(--bs-body-color, #f3f4f6);
-    --mc-all-row-hover-color: var(--bs-body-color, #f3f4f6);
-    --mc-accent-color: #a5b4fc;
 }
 
 [data-bs-theme="dark"] .block_my_certificates .all-certificates-card {
