@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->component = 'block_my_certificates';
 $plugin->version   = 2026110600;
 $plugin->requires  = 2024100705;
+$plugin->supported = [405, 503];
 $plugin->dependencies = [
         'mod_customcert' => 2024042212,
 ];
