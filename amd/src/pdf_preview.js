@@ -43,6 +43,7 @@ define('block_my_certificates/pdf_preview', [], function() {
           canvasContext: ctx,
           viewport: viewport
       }).promise;
+      canvas.classList.add('pdf-loaded');
   }
 
   /**
@@ -51,9 +52,14 @@ define('block_my_certificates/pdf_preview', [], function() {
    */
   async function init(args) {
       const workerSrc = args.workersrc;
-      const nodes = document.querySelectorAll('.pdf-canvas');
+      const nodes = document.querySelectorAll('.block_my_certificates .pdf-canvas');
       for (const node of nodes) {
-          await renderCanvas(node, workerSrc);
+          try {
+              await renderCanvas(node, workerSrc);
+          } catch (error) {
+              // Keep the download link available and continue with the remaining certificates.
+              node.hidden = true;
+          }
       }
   }
 
