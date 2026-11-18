@@ -214,6 +214,7 @@ final class block_my_certificates_test extends \advanced_testcase {
         global $DB;
 
         $this->resetAfterTest(true);
+        $this->setAdminUser();
 
         $this->assertTrue(
             $this->has_customcert_generator(),
@@ -258,6 +259,7 @@ final class block_my_certificates_test extends \advanced_testcase {
      */
     public function test_get_all_certificates_returns_view_urls(): void {
         $this->resetAfterTest(true);
+        $this->setAdminUser();
 
         $this->assertTrue(
             $this->has_customcert_generator(),
@@ -408,5 +410,204 @@ final class block_my_certificates_test extends \advanced_testcase {
 
         $this->assertNotEmpty($content);
         $this->assertStringContainsString('You do not have any certificates yet.', $content->text);
+    }
+
+    /**
+     * Hidden, restricted and inaccessible certificates must not be advertised to students.
+     *
+     * @covers \block_my_certificates\local\certificate_data_provider::get_all_certificates
+     */
+    public function test_all_certificates_respects_user_access(): void {
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator();
+        $student = $generator->create_user();
+        $course = $generator->create_course(['enablecompletion' => 1]);
+        $hiddencourse = $generator->create_course(['visible' => 0]);
+        $othercourse = $generator->create_course();
+        $generator->enrol_user($student->id, $course->id, 'student');
+        $generator->enrol_user($student->id, $hiddencourse->id, 'student');
+        $visible = $generator->create_module('customcert', ['course' => $course->id]);
+        $generator->create_module('customcert', ['course' => $course->id, 'visible' => 0]);
+        $generator->create_module('customcert', ['course' => $hiddencourse->id]);
+        $generator->create_module('customcert', ['course' => $othercourse->id]);
+        $generator->create_module('customcert', [
+            'course' => $course->id,
+            'availability' => json_encode([
+                'op' => '&',
+                'c' => [['type' => 'date', 'd' => '>=', 't' => time() + DAYSECS]],
+                'showc' => [false],
+            ]),
+        ]);
+
+        $this->setUser($student);
+        $provider = new \block_my_certificates\local\certificate_data_provider();
+        $this->assertSame([(int)$visible->id], array_map('intval', array_column($provider->get_all_certificates(), 'id')));
+
+        // A teacher with access to hidden activities still sees them.
+        $this->setAdminUser();
+        $this->assertCount(5, $provider->get_all_certificates());
+    }
+
+    /**
+     * Theme defaults and custom background/text pairs must survive colour-mode changes.
+     *
+     * @covers \block_my_certificates::get_color_settings
+     * @covers \block_my_certificates::build_color_style
+     * @covers \block_my_certificates::get_contrasting_text_color
+     */
+    public function test_colour_styles_preserve_theme_defaults_and_contrast(): void {
+        $this->resetAfterTest(true);
+        \block_instance('my_certificates');
+        $block = new class extends \block_my_certificates {
+            /**
+             * Get the style for an instance configuration.
+             *
+             * @param array $config Instance settings.
+             * @return string Inline style.
+             */
+            public function style_for(array $config): string {
+                $this->config = (object)$config;
+                return $this->build_color_style($this->get_color_settings());
+            }
+        };
+
+        $this->assertSame('', $block->style_for([]));
+        $this->assertSame('', $block->style_for(['allcertsitembg' => '#f8fafc']));
+        $monotone = $block->style_for(['allcertsfillmode' => 'monotone']);
+        $this->assertStringContainsString('--mc-all-card-gradient-end: var(--mc-all-card-gradient-start)', $monotone);
+        $this->assertStringNotContainsString('#ffffff', $monotone);
+        // An unused end colour must not freeze the default start colour in monotone mode.
+        $this->assertSame($monotone, $block->style_for([
+            'allcertsfillmode' => 'monotone', 'allcertsgradientend' => '#ff0000',
+        ]));
+
+        $light = $block->style_for([
+            'allcertscardbg' => '#fffffe',
+            'allcertsitembg' => '#ffffff',
+            'allcertsitemhoverbg' => '#ffffff',
+        ]);
+        $this->assertStringContainsString('--mc-all-card-color: #000000;', $light);
+        $this->assertStringContainsString('--mc-all-row-color: #000000;', $light);
+        $this->assertStringContainsString('--mc-all-row-course-color: #000000;', $light);
+        $this->assertStringContainsString('--mc-all-row-hover-color: #000000;', $light);
+        $this->assertStringContainsString('--mc-all-row-hover-course-color: #000000;', $light);
+        $this->assertStringContainsString('--mc-all-card-gradient-end: #eef2ff;', $light);
+
+        $dark = $block->style_for([
+            'allcertsfillmode' => 'monotone',
+            'allcertscardbg' => '#111111',
+            'allcertsitembg' => '#111111',
+            'allcertsitemhoverbg' => '#111111',
+        ]);
+        $this->assertStringContainsString('--mc-all-card-gradient-end: #111111;', $dark);
+        $this->assertStringContainsString('--mc-all-card-color: #ffffff;', $dark);
+        $this->assertStringContainsString('--mc-all-row-color: #ffffff;', $dark);
+        $this->assertStringContainsString('--mc-all-row-hover-color: #ffffff;', $dark);
+        $this->assertSame('', $block->style_for(['allcertsitembg' => 'invalid']));
+    }
+
+    /**
+     * Explicit palettes remain independent and default mode ignores saved overrides.
+     *
+     * @covers \block_my_certificates::build_palette_style
+     * @covers \block_my_certificates::get_palette_defaults
+     * @covers \block_my_certificates::uses_default_colors
+     */
+    public function test_independent_light_and_dark_palettes(): void {
+        $this->resetAfterTest(true);
+        \block_instance('my_certificates');
+        $block = new class extends \block_my_certificates {
+            /**
+             * Get styles for the supplied configuration.
+             *
+             * @param array $config Instance settings.
+             * @return string Inline styles.
+             */
+            public function style_for(array $config): string {
+                $this->config = (object)$config;
+                return $this->build_color_style($this->get_color_settings());
+            }
+        };
+        $this->assertTrue(\block_my_certificates::uses_default_colors(null));
+        $this->assertTrue(\block_my_certificates::uses_default_colors((object)['cardgradientstart' => '#667eea']));
+        $this->assertFalse(\block_my_certificates::uses_default_colors((object)['cardgradientstart' => '#ff0000']));
+        $this->assertSame('', $block->style_for([
+            'usedefaultcolors' => 1, 'cardgradientstart' => '#ff0000', 'dark_cardgradientstart' => '#00ff00',
+        ]));
+
+        $config = [
+            'usedefaultcolors' => 0,
+            'cardfillmode' => 'monotone',
+            'cardgradientstart' => '#ffffff',
+            'dark_cardfillmode' => 'monotone',
+            'dark_cardgradientstart' => '#111111',
+            'allcertsitembg' => '#ffffff',
+            'dark_allcertsitembg' => '#111111',
+            'dark_allcertsgradientdirection' => '90deg',
+        ];
+        $style = $block->style_for($config);
+        $this->assertStringContainsString('--mc-light-card-gradient-end: #ffffff;', $style);
+        $this->assertStringContainsString('--mc-dark-card-gradient-end: #111111;', $style);
+        $this->assertStringContainsString('--mc-light-card-color: #000000;', $style);
+        $this->assertStringContainsString('--mc-dark-card-color: #ffffff;', $style);
+        $this->assertStringContainsString('--mc-light-all-row-color: #000000;', $style);
+        $this->assertStringContainsString('--mc-dark-all-row-color: #ffffff;', $style);
+        $this->assertStringContainsString('--mc-dark-all-card-gradient-direction: 90deg;', $style);
+        $this->assertStringContainsString('--mc-light-all-card-gradient-direction: 135deg;', $style);
+
+        $invalid = $block->style_for([
+            'usedefaultcolors' => 0,
+            'dark_cardgradientstart' => 'red; display:none',
+            'dark_cardgradientdirection' => 'invalid',
+        ]);
+        $this->assertStringNotContainsString('display:none', $invalid);
+        $this->assertStringContainsString('--mc-dark-card-gradient-start: #37306b;', $invalid);
+        $this->assertStringContainsString('--mc-dark-card-gradient-direction: 135deg;', $invalid);
+    }
+
+    /**
+     * The real settings form exposes both palettes and preserves legacy overrides.
+     *
+     * @covers \block_my_certificates_edit_form
+     */
+    public function test_colour_form_preserves_legacy_settings(): void {
+        global $CFG;
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        require_once($CFG->dirroot . '/blocks/edit_form.php');
+        $block = \block_instance('my_certificates');
+        require_once($CFG->dirroot . '/blocks/my_certificates/edit_form.php');
+        // Share the global page with TinyMCE plugins when the editor is rendered.
+        $page = $GLOBALS['PAGE'];
+        $page->set_context(\context_system::instance());
+        $page->set_url('/my/index.php');
+        $page->set_pagelayout('mydashboard');
+        $block->instance = (object)['id' => null, 'parentcontextid' => \context_system::instance()->id];
+        $block->page = $page;
+        $block->config = (object)['cardgradientstart' => '#ffffff', 'cardfillmode' => 'monotone'];
+        $form = new class (null, ['block' => $block, 'page' => $page]) extends \block_my_certificates_edit_form {
+            /**
+             * Get a field value after defaults have been prepared.
+             *
+             * @param string $name Field name.
+             * @return mixed Field value.
+             */
+            public function field_value(string $name) {
+                return $this->_form->getElement($name)->getValue();
+            }
+        };
+        $form->set_data((object)['parentcontextid' => \context_system::instance()->id]);
+        $this->assertSame(0, (int)$form->field_value('config_usedefaultcolors'));
+        $this->assertSame('#ffffff', $form->field_value('config_dark_cardgradientstart'));
+        $this->assertSame('#764ba2', $form->field_value('config_dark_cardgradientend'));
+        $html = $form->render();
+        $this->assertStringContainsString('config_usedefaultcolors', $html);
+        $this->assertStringContainsString('config_dark_allcertsitembg', $html);
+
+        $data = ['config_usedefaultcolors' => 0, 'config_dark_allcertsitembg' => 'invalid'];
+        $this->assertArrayHasKey('config_dark_allcertsitembg', $form->validation($data, []));
+        $data['config_usedefaultcolors'] = 1;
+        $this->assertArrayNotHasKey('config_dark_allcertsitembg', $form->validation($data, []));
     }
 }

@@ -10,7 +10,7 @@ jobs:
       MOODLEDATA_DIR: ../moodledata
     services:
       postgres:
-        image: postgres:15
+        image: postgres:17
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
@@ -18,13 +18,12 @@ jobs:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
       mariadb:
-        image: mariadb:10.11
+        image: mariadb:11.4
         env:
-          MYSQL_USER: 'root'
-          MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: '1'
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 3
+        options: --health-cmd="mariadb-admin ping" --health-interval 10s --health-timeout 5s --health-retries 3
 
     strategy:
       fail-fast: false
@@ -84,6 +83,30 @@ jobs:
           - moodle-branch: 'MOODLE_501_STABLE'
             php: '8.4'
             database: 'pgsql'
+          - moodle-branch: 'MOODLE_502_STABLE'
+            php: '8.3'
+            database: 'mariadb'
+          - moodle-branch: 'MOODLE_502_STABLE'
+            php: '8.3'
+            database: 'pgsql'
+          - moodle-branch: 'MOODLE_502_STABLE'
+            php: '8.4'
+            database: 'mariadb'
+          - moodle-branch: 'MOODLE_502_STABLE'
+            php: '8.4'
+            database: 'pgsql'
+          - moodle-branch: 'MOODLE_503_STABLE'
+            php: '8.3'
+            database: 'mariadb'
+          - moodle-branch: 'MOODLE_503_STABLE'
+            php: '8.3'
+            database: 'pgsql'
+          - moodle-branch: 'MOODLE_503_STABLE'
+            php: '8.4'
+            database: 'mariadb'
+          - moodle-branch: 'MOODLE_503_STABLE'
+            php: '8.4'
+            database: 'pgsql'
 
     steps:
       - name: Check out repository code
@@ -92,7 +115,10 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
+
+      - name: Test PDF preview recovery
+        run: node --test tests/pdf_preview_test.cjs
 
       - name: Setup PHP environment
         uses: shivammathur/setup-php@v2
@@ -121,6 +147,10 @@ jobs:
           git fetch --all --tags
           if [[ "${MOODLE_BRANCH}" == "MOODLE_405_STABLE" ]]; then
             git checkout v4.4.8
+          elif [[ "${MOODLE_BRANCH}" == "MOODLE_502_STABLE" ]]; then
+            git checkout v5.2.13
+          elif [[ "${MOODLE_BRANCH}" == "MOODLE_503_STABLE" ]]; then
+            git checkout v5.3.0
           else
             git checkout v5.0.2
           fi

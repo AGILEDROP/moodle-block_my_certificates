@@ -56,7 +56,7 @@ class certificate_data_provider {
 
         $out = [];
         foreach ($records as $r) {
-            $previewurl = new \moodle_url('/mod/customcert/view.php', ['id' => $r->cmid, 'downloadown' => 1]);
+            $previewurl = new \moodle_url('/blocks/my_certificates/preview.php', ['id' => $r->cmid]);
             $certificatename = trim((string)($r->certificatename ?? ''));
 
             $out[] = [
@@ -74,7 +74,7 @@ class certificate_data_provider {
     }
 
     /**
-     * Returns a list of all custom certificate definitions available site-wide.
+     * Returns certificate definitions the current user can access.
      *
      * @return array List of certificate metadata.
      */
@@ -93,14 +93,29 @@ class certificate_data_provider {
         $certificates = $DB->get_records_sql($sql);
 
         $certificatesdata = [];
+        $courses = [];
         foreach ($certificates as $certificate) {
-            $courseurl = (new \moodle_url('/course/view.php', ['id' => $certificate->course]))->out(false);
-            $viewurl = '';
-            $certificatename = trim((string)($certificate->certificatename ?? ''));
-
-            if ($cm = get_coursemodule_from_instance('customcert', $certificate->id, $certificate->course, false, IGNORE_MISSING)) {
-                $viewurl = (new \moodle_url('/mod/customcert/view.php', ['id' => $cm->id]))->out(false);
+            if (!array_key_exists($certificate->course, $courses)) {
+                $course = get_course($certificate->course);
+                $courses[$certificate->course] = can_access_course($course, null, '', true);
             }
+            if (!$courses[$certificate->course]) {
+                continue;
+            }
+
+            $modinfo = get_fast_modinfo($certificate->course);
+            $instances = $modinfo->get_instances_of('customcert');
+            $cm = $instances[$certificate->id] ?? null;
+            if (!$cm || !$cm->uservisible || $cm->deletioninprogress) {
+                continue;
+            }
+            if (!has_capability('mod/customcert:view', $cm->context)) {
+                continue;
+            }
+
+            $courseurl = (new \moodle_url('/course/view.php', ['id' => $certificate->course]))->out(false);
+            $viewurl = (new \moodle_url('/mod/customcert/view.php', ['id' => $cm->id]))->out(false);
+            $certificatename = trim((string)($certificate->certificatename ?? ''));
 
             $certificatesdata[] = [
                 'id' => $certificate->id,

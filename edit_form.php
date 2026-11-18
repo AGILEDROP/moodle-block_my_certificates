@@ -55,6 +55,40 @@ class block_my_certificates_edit_form extends block_edit_form {
     protected function prepare_defaults(stdClass $defaults): stdClass {
         $defaults = parent::prepare_defaults($defaults);
 
+        $config = new stdClass();
+        foreach (get_object_vars($defaults) as $name => $value) {
+            if (str_starts_with($name, 'config_')) {
+                $config->{substr($name, 7)} = $value;
+            }
+        }
+        $defaults->config_usedefaultcolors = block_my_certificates::uses_default_colors($config) ? 1 : 0;
+        $lightdefaults = block_my_certificates::get_palette_defaults();
+        $darkdefaults = block_my_certificates::get_palette_defaults('dark');
+        if (!isset($config->usedefaultcolors)) {
+            // Seed dark settings from legacy overrides without changing untouched theme colours.
+            foreach ($lightdefaults as $setting => $value) {
+                if (isset($config->{$setting}) && strtolower(trim((string)$config->{$setting})) !== $value) {
+                    $darkdefaults[$setting] = $config->{$setting};
+                }
+            }
+            foreach ([['cardgradientstart', 'cardgradientend'], ['allcertscardbg', 'allcertsgradientend']] as $pair) {
+                if (
+                    $darkdefaults[$pair[0]] !== block_my_certificates::get_palette_defaults('dark')[$pair[0]] ||
+                        $darkdefaults[$pair[1]] !== block_my_certificates::get_palette_defaults('dark')[$pair[1]]
+                ) {
+                    foreach ($pair as $setting) {
+                        $darkdefaults[$setting] = $config->{$setting} ?? $lightdefaults[$setting];
+                    }
+                }
+            }
+        }
+        foreach ($darkdefaults as $setting => $value) {
+            $key = 'config_dark_' . $setting;
+            if (!property_exists($defaults, $key)) {
+                $defaults->{$key} = $value;
+            }
+        }
+
         if (!property_exists($defaults, 'config_text')) {
             return $defaults;
         }
@@ -211,163 +245,89 @@ class block_my_certificates_edit_form extends block_edit_form {
         $mform->setExpanded('config_colorsettings', false);
 
         $mform->addElement(
-            'select',
-            'config_cardfillmode',
-            get_string('cardfillmode', 'block_my_certificates'),
-            [
-                'gradient' => get_string('cardfillmode_gradient', 'block_my_certificates'),
-                'monotone' => get_string('cardfillmode_monotone', 'block_my_certificates'),
-            ]
+            'advcheckbox',
+            'config_usedefaultcolors',
+            get_string('usedefaultcolors', 'block_my_certificates')
         );
-        $mform->addHelpButton('config_cardfillmode', 'cardfillmode', 'block_my_certificates');
-        $mform->setDefault('config_cardfillmode', 'gradient');
-        $mform->setType('config_cardfillmode', PARAM_ALPHA);
+        $mform->addHelpButton('config_usedefaultcolors', 'usedefaultcolors', 'block_my_certificates');
+        $mform->setDefault('config_usedefaultcolors', 1);
+        $mform->setType('config_usedefaultcolors', PARAM_BOOL);
 
-        $mform->addElement(
-            'select',
-            'config_cardgradientdirection',
-            get_string('cardgradientdirection', 'block_my_certificates'),
-            [
-                '0deg' => get_string('gradientdir_0', 'block_my_certificates'),
-                '45deg' => get_string('gradientdir_45', 'block_my_certificates'),
-                '90deg' => get_string('gradientdir_90', 'block_my_certificates'),
-                '135deg' => get_string('gradientdir_135', 'block_my_certificates'),
-                '180deg' => get_string('gradientdir_180', 'block_my_certificates'),
-                '270deg' => get_string('gradientdir_270', 'block_my_certificates'),
-            ]
-        );
-        $mform->addHelpButton('config_cardgradientdirection', 'cardgradientdirection', 'block_my_certificates');
-        $mform->setDefault('config_cardgradientdirection', '135deg');
-        $mform->setType('config_cardgradientdirection', PARAM_RAW_TRIMMED);
-
-        $mform->addElement(
-            'my_certificates_colourpicker',
-            'config_cardgradientstart',
-            get_string('cardgradientstart', 'block_my_certificates')
-        );
-        $mform->setDefault('config_cardgradientstart', '#667eea');
-        $mform->setType('config_cardgradientstart', PARAM_RAW_TRIMMED);
-
-        $mform->addElement(
-            'my_certificates_colourpicker',
-            'config_cardgradientend',
-            get_string('cardgradientend', 'block_my_certificates')
-        );
-        $mform->setDefault('config_cardgradientend', '#764ba2');
-        $mform->setType('config_cardgradientend', PARAM_RAW_TRIMMED);
-
-        $mform->addElement(
-            'select',
-            'config_allcertsfillmode',
-            get_string('allcertsfillmode', 'block_my_certificates'),
-            [
-                'gradient' => get_string('cardfillmode_gradient', 'block_my_certificates'),
-                'monotone' => get_string('cardfillmode_monotone', 'block_my_certificates'),
-            ]
-        );
-        $mform->addHelpButton('config_allcertsfillmode', 'allcertsfillmode', 'block_my_certificates');
-        $mform->setDefault('config_allcertsfillmode', 'gradient');
-        $mform->setType('config_allcertsfillmode', PARAM_ALPHA);
-
-        $mform->addElement(
-            'select',
-            'config_allcertsgradientdirection',
-            get_string('allcertsgradientdirection', 'block_my_certificates'),
-            [
-                '0deg' => get_string('gradientdir_0', 'block_my_certificates'),
-                '45deg' => get_string('gradientdir_45', 'block_my_certificates'),
-                '90deg' => get_string('gradientdir_90', 'block_my_certificates'),
-                '135deg' => get_string('gradientdir_135', 'block_my_certificates'),
-                '180deg' => get_string('gradientdir_180', 'block_my_certificates'),
-                '270deg' => get_string('gradientdir_270', 'block_my_certificates'),
-            ]
-        );
-        $mform->addHelpButton('config_allcertsgradientdirection', 'allcertsgradientdirection', 'block_my_certificates');
-        $mform->setDefault('config_allcertsgradientdirection', '135deg');
-        $mform->setType('config_allcertsgradientdirection', PARAM_RAW_TRIMMED);
-
-        $mform->addElement(
-            'my_certificates_colourpicker',
-            'config_allcertscardbg',
-            get_string('allcertscardbg', 'block_my_certificates')
-        );
-        $mform->setDefault('config_allcertscardbg', '#ffffff');
-        $mform->setType('config_allcertscardbg', PARAM_RAW_TRIMMED);
-
-        $mform->addElement(
-            'my_certificates_colourpicker',
-            'config_allcertsgradientend',
-            get_string('allcertsgradientend', 'block_my_certificates')
-        );
-        $mform->setDefault('config_allcertsgradientend', '#eef2ff');
-        $mform->setType('config_allcertsgradientend', PARAM_RAW_TRIMMED);
-
-        $mform->addElement(
-            'my_certificates_colourpicker',
-            'config_allcertsitembg',
-            get_string('allcertsitembg', 'block_my_certificates')
-        );
-        $mform->setDefault('config_allcertsitembg', '#f8fafc');
-        $mform->setType('config_allcertsitembg', PARAM_RAW_TRIMMED);
-
-        $mform->addElement(
-            'my_certificates_colourpicker',
-            'config_allcertsitemhoverbg',
-            get_string('allcertsitemhoverbg', 'block_my_certificates')
-        );
-        $mform->setDefault('config_allcertsitemhoverbg', '#eef2ff');
-        $mform->setType('config_allcertsitemhoverbg', PARAM_RAW_TRIMMED);
-
-        $mform->addElement(
-            'my_certificates_colourpicker',
-            'config_accentcolor',
-            get_string('accentcolor', 'block_my_certificates')
-        );
-        $mform->setDefault('config_accentcolor', '#6366f1');
-        $mform->setType('config_accentcolor', PARAM_RAW_TRIMMED);
-
-        $mform->addElement(
-            'html',
-            html_writer::div(
-                html_writer::tag(
-                    'button',
-                    get_string('resetcolors', 'block_my_certificates'),
-                    [
-                        'type' => 'button',
-                        'class' => 'btn btn-secondary',
-                        'id' => 'id_my_certificates_reset_colors',
-                        'onclick' => $this->get_reset_colors_onclick_js(),
-                    ]
-                ),
-                'my-certificates-reset-colors'
-            )
-        );
-
-        $mform->hideIf('config_cardgradientdirection', 'config_cardfillmode', 'eq', 'monotone');
-        $mform->hideIf('config_cardgradientend', 'config_cardfillmode', 'eq', 'monotone');
-        $mform->hideIf('config_allcertsgradientdirection', 'config_allcertsfillmode', 'eq', 'monotone');
-        $mform->hideIf('config_allcertsgradientend', 'config_allcertsfillmode', 'eq', 'monotone');
+        foreach (['light', 'dark'] as $mode) {
+            $this->add_palette_fields($mform, $mode);
+        }
+        $mform->addElement('button', 'config_resetcolors', get_string('resetcolors', 'block_my_certificates'), [
+            'onclick' => $this->get_reset_colors_onclick_js(),
+        ]);
+        $mform->hideIf('config_resetcolors', 'config_usedefaultcolors', 'checked');
     }
 
     /**
-     * Returns default values for all color customization fields.
+     * Add one palette, retaining the existing field names for light mode.
+     *
+     * @param MoodleQuickForm $mform Instance form.
+     * @param string $mode Light or dark.
+     */
+    protected function add_palette_fields(MoodleQuickForm $mform, string $mode): void {
+        $prefix = 'config_' . ($mode === 'dark' ? 'dark_' : '');
+        $heading = $prefix . 'palette';
+        $mform->addElement('static', $heading, '', html_writer::tag('h4', get_string($mode . 'colors', 'block_my_certificates')));
+        $mform->hideIf($heading, 'config_usedefaultcolors', 'checked');
+        // Keep related card options together instead of listing all colour pickers first.
+        $fields = [
+            'cardfillmode', 'cardgradientdirection', 'cardgradientstart', 'cardgradientend',
+            'allcertsfillmode', 'allcertsgradientdirection', 'allcertscardbg', 'allcertsgradientend',
+            'allcertsitembg', 'allcertsitemhoverbg', 'accentcolor',
+        ];
+        $defaults = block_my_certificates::get_palette_defaults($mode);
+        foreach ($fields as $setting) {
+            $name = $prefix . $setting;
+            $label = get_string($setting, 'block_my_certificates');
+            if (str_ends_with($setting, 'fillmode')) {
+                $options = [
+                    'gradient' => get_string('cardfillmode_gradient', 'block_my_certificates'),
+                    'monotone' => get_string('cardfillmode_monotone', 'block_my_certificates'),
+                ];
+                $mform->addElement('select', $name, $label, $options);
+                $mform->addHelpButton($name, $setting, 'block_my_certificates');
+                $mform->setType($name, PARAM_ALPHA);
+            } else if (str_ends_with($setting, 'direction')) {
+                $options = [];
+                foreach ([0, 45, 90, 135, 180, 270] as $angle) {
+                    $options[$angle . 'deg'] = get_string('gradientdir_' . $angle, 'block_my_certificates');
+                }
+                $mform->addElement('select', $name, $label, $options);
+                $mform->addHelpButton($name, $setting, 'block_my_certificates');
+                $mform->setType($name, PARAM_RAW_TRIMMED);
+            } else {
+                $mform->addElement('my_certificates_colourpicker', $name, $label);
+                $mform->setType($name, PARAM_RAW_TRIMMED);
+            }
+            $mform->setDefault($name, $defaults[$setting]);
+            $mform->hideIf($name, 'config_usedefaultcolors', 'checked');
+        }
+        foreach (
+            [['cardgradientdirection', 'cardfillmode'], ['cardgradientend', 'cardfillmode'],
+                  ['allcertsgradientdirection', 'allcertsfillmode'], ['allcertsgradientend', 'allcertsfillmode']] as $pair
+        ) {
+            $mform->hideIf($prefix . $pair[0], $prefix . $pair[1], 'eq', 'monotone');
+        }
+    }
+
+    /**
+     * Returns reset values for both palettes.
      *
      * @return array<string, string>
      */
     protected function get_default_color_values(): array {
-        return [
-            'config_cardfillmode' => 'gradient',
-            'config_cardgradientdirection' => '135deg',
-            'config_cardgradientstart' => '#667eea',
-            'config_cardgradientend' => '#764ba2',
-            'config_allcertsfillmode' => 'gradient',
-            'config_allcertsgradientdirection' => '135deg',
-            'config_allcertscardbg' => '#ffffff',
-            'config_allcertsgradientend' => '#eef2ff',
-            'config_allcertsitembg' => '#f8fafc',
-            'config_allcertsitemhoverbg' => '#eef2ff',
-            'config_accentcolor' => '#6366f1',
-        ];
+        $defaults = [];
+        foreach (['light', 'dark'] as $mode) {
+            $prefix = 'config_' . ($mode === 'dark' ? 'dark_' : '');
+            foreach (block_my_certificates::get_palette_defaults($mode) as $setting => $value) {
+                $defaults[$prefix . $setting] = $value;
+            }
+        }
+        return $defaults;
     }
 
     /**
@@ -422,6 +382,10 @@ JS;
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
+        if (!empty($data['config_usedefaultcolors'])) {
+            return $errors;
+        }
+
         $colorfields = [
             'config_cardgradientstart',
             'config_cardgradientend',
@@ -432,6 +396,10 @@ JS;
             'config_accentcolor',
         ];
 
+        $colorfields = array_merge($colorfields, array_map(
+            static fn($field) => str_replace('config_', 'config_dark_', $field),
+            $colorfields
+        ));
         foreach ($colorfields as $field) {
             $value = trim((string)($data[$field] ?? ''));
             if ($value === '') {

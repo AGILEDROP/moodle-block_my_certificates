@@ -1,0 +1,17 @@
+{
+  "name": "agiledrop/moodle-block_my_certificates",
+  "description": "Moodle block that lets learners preview and download certificates issued by the Custom Certificate activity.",
+  "type": "moodle-block",
+  "minimum-stability": "stable",
+  "license": "GPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "Agiledrop ltd.",
+      "email": "hello@agiledrop.com"
+    }
+  ],
+  "require": {
+    "moodle/moodle": ">=4.5.5 <5.4",
+    "moodle/composer-installer": "*"
+  }
+}
