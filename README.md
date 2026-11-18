@@ -19,7 +19,7 @@ Ideal for dashboards, course pages, and the site home page, it highlights comple
 
 ## Requirements
 
-- Moodle 4.5 to 5.3 (standard Boost theme)
+- Moodle 4.5.5 through 5.3.x (standard Boost theme)
 - PHP supported by your Moodle version (8.1 or higher for Moodle 4.5)
 - [Custom Certificate module](https://moodle.org/plugins/mod_customcert) (mod_customcert) version 2024042212 or higher
 
@@ -29,26 +29,30 @@ Previews and downloads are served by the block's own `preview.php`, which works 
 
 ## Installation
 
-### Installing via uploaded ZIP file
+Install the [Custom Certificate activity](https://moodle.org/plugins/mod_customcert) first. This block requires `mod_customcert` build `2024042212` or later with every installation method.
 
-1. Log in as an admin and go to Site administration > Plugins > Install plugins.
-2. Upload the ZIP file with the plugin code.
-3. Check the plugin validation report and finish the installation.
+### Composer
 
-### Installing manually
+Once a stable release is available on Packagist, run this command from the root of your Composer-managed Moodle project:
 
-Copy the plugin directory to:
-
-```
-{your/moodle/dirroot}/blocks/my_certificates
+```bash
+composer require agiledrop/moodle-block_my_certificates
 ```
 
-Then visit Site administration > Notifications to complete the installation.
+### ZIP
 
-Alternatively, you can run:
+Choose a release compatible with your Moodle version. Open **Site administration → Plugins → Install plugins**, upload the plugin ZIP and follow the installation prompts.
 
-```
-$ php admin/cli/upgrade.php
+### Manual or Git installation
+
+Extract the plugin or check out the matching release from the [GitHub repository](https://github.com/AGILEDROP/moodle-block_my_certificates) into `blocks/my_certificates/` under Moodle's web root. If your project uses a `public/` web root, the path from the project root is `public/blocks/my_certificates/`. The directory should contain the plugin's `version.php`.
+
+### Complete the installation
+
+After installing the files with Composer, manually or with Git, open **Site administration → Notifications**. Alternatively, run the following command from the Moodle project root:
+
+```bash
+php admin/cli/upgrade.php
 ```
 
 ## Usage
